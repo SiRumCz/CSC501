@@ -72,6 +72,15 @@ def setup_database():
     c.execute('INSERT INTO movies VALUES (?, ?, ?, ?)',
               (movie_id, title, year, genres,))
 
+  # ratings.csv
+  for lineno, line in enumerate(
+      zipfile.open('ml-latest-small/ratings.csv').readlines()):
+      if lineno == 0:
+        assert line.decode('utf-8').strip() == 'userId,movieId,rating,timestamp'
+        continue
+      c.execute('INSERT INTO ratings VALUES (?, ?, ?, ?)',
+              (*line.decode('utf-8').strip().split(','),))
+
   # tags.csv
   # userId,movieId,tag,timestamp
   # 2,60756,funny,1445714994
