@@ -46,7 +46,7 @@ def setup_database():
       assert line.decode('utf-8').strip() == 'movieId,imdbId,tmdbId'
       continue
     c.execute('INSERT INTO links VALUES (?, ?, ?)',
-              (*line.decode('utf-8').strip().split(','), ))
+              (*line.decode('utf-8').strip().split(','),))
 
   # movies.csv
   # movieId,title,genres
@@ -74,11 +74,11 @@ def setup_database():
 
   # ratings.csv
   for lineno, line in enumerate(
-      zipfile.open('ml-latest-small/ratings.csv').readlines()):
-      if lineno == 0:
-        assert line.decode('utf-8').strip() == 'userId,movieId,rating,timestamp'
-        continue
-      c.execute('INSERT INTO ratings VALUES (?, ?, ?, ?)',
+    zipfile.open('ml-latest-small/ratings.csv').readlines()):
+    if lineno == 0:
+      assert line.decode('utf-8').strip() == 'userId,movieId,rating,timestamp'
+      continue
+    c.execute('INSERT INTO ratings VALUES (?, ?, ?, ?)',
               (*line.decode('utf-8').strip().split(','),))
 
   # tags.csv
