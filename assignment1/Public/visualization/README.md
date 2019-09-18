@@ -12,6 +12,6 @@ you will see a simple bar chart with sample data in the first page.
 
 
 
-### `npm run build` fails to minify
+### `npm run build`
 
 To build the project for production.
