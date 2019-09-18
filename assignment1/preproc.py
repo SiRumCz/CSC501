@@ -1,5 +1,5 @@
-from io import BytesIO
 import sqlite3
+from io import BytesIO
 from zipfile import ZipFile
 
 import requests
@@ -10,7 +10,7 @@ def setup_database():
   Load the MovieLens dataset into sqlite database. The function only needs to be
   called once.
   """
-  # Download the data
+  # Download the data, using small dataset to build prototype for now.
   url = 'http://files.grouplens.org/datasets/movielens/ml-latest-small.zip'
   r = requests.get(url)
   zipfile = ZipFile(BytesIO(r.content))
@@ -24,18 +24,34 @@ def setup_database():
 
   # TODO any smarter schema design?
   # Create table
-  c.execute('''CREATE TABLE links
-                 (MovieId integer, ImdbId integer, TmdbId integer)''')
+  c.execute('''CREATE TABLE links (
+                 MovieId INTEGER,
+                 ImdbId INTEGER,
+                 TmdbId INTEGER,
+                 FOREIGN KEY (MovieId) REFERENCES movies (MovieId)
+               )''')
   # sqlite does not support array data type, hence in Genres the input will be
   # kept as the raw format - string value of "action|romance|<...>".
-  c.execute('''CREATE TABLE movies
-                 (MovieId integer, Title text, Year integer, Genres text)''')
-  c.execute('''CREATE TABLE ratings
-                 (UserId integer, MovieId integer, rating real, timestamp integer)
-                 ''')
-  c.execute('''CREATE TABLE tags
-                 (MovieId integer, ImdbId integer, TmdbId integer,
-                 timestamp integer)''')
+  c.execute('''CREATE TABLE movies (
+                 MovieId INTEGER PRIMARY KEY,
+                 Title TEXT,
+                 Year INTEGER, 
+                 Genres TEXT
+               )''')
+  c.execute('''CREATE TABLE ratings (
+                 UserId INTEGER,
+                 MovieId INTEGER,
+                 Rating REAL,
+                 Timestamp TIMESTAMP,
+                 FOREIGN KEY(MovieId) REFERENCES movies (MovieId)
+               )''')
+  c.execute('''CREATE TABLE tags (
+                 UserId INTEGER,
+                 MovieId INTEGER,
+                 Tag TEXT,
+                 Timestamp TIMESTAMP,
+                 FOREIGN KEY (MovieId) REFERENCES movies (MovieId)
+               )''')
 
   # links.csv
   # movieId,imdbId,tmdbId
@@ -62,6 +78,9 @@ def setup_database():
     # split in three steps to avoid the movie names with comma
     movie_id, rest = decoded.split(',', 1)
     rest, genres = rest.rsplit(',', 1)
+    # remove the opening and closing double quote, if present.
+    if rest[0] == rest[-1] == '"':
+      rest = rest[1:-1]
     try:
       title, year = rest.rsplit(' ', 1)
     except ValueError:
@@ -74,11 +93,11 @@ def setup_database():
 
   # ratings.csv
   for lineno, line in enumerate(
-    zipfile.open('ml-latest-small/ratings.csv').readlines()):
+      zipfile.open('ml-latest-small/ratings.csv').readlines()):
     if lineno == 0:
       assert line.decode('utf-8').strip() == 'userId,movieId,rating,timestamp'
       continue
-    c.execute('INSERT INTO ratings VALUES (?, ?, ?, ?)',
+    c.execute("INSERT INTO ratings VALUES (?, ?, ?, datetime(?, 'unixepoch'))",
               (*line.decode('utf-8').strip().split(','),))
 
   # tags.csv
@@ -89,7 +108,7 @@ def setup_database():
     if lineno == 0:
       assert line.decode('utf-8').strip() == 'userId,movieId,tag,timestamp'
       continue
-    c.execute('INSERT INTO tags VALUES (?, ?, ?, ?)',
+    c.execute("INSERT INTO tags VALUES (?, ?, ?, datetime(?, 'unixepoch'))",
               (*line.decode('utf-8').strip().split(','),))
 
   conn.commit()
