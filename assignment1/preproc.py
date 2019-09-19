@@ -4,16 +4,33 @@ from zipfile import ZipFile
 
 import requests
 
+DATASET = {
+  'S': 'ml-latest-small',
+  'L': 'ml-latest'
+}
 
-def setup_database():
+
+def setup_database(dataset: str, mode: str):
   """
   Load the MovieLens dataset into sqlite database. The function only needs to be
   called once.
+
+  :param dataset: String value specify the dataset. Can be 'S' for
+                  ml-latest-small.zip or 'L' for ml-latest.zip
+  :param mode: String value specify fetch the dataset from URL or local storage.
+               Can be 'fetch' or 'local'.
   """
-  # Download the data, using small dataset to build prototype for now.
-  url = 'http://files.grouplens.org/datasets/movielens/ml-latest-small.zip'
-  r = requests.get(url)
-  zipfile = ZipFile(BytesIO(r.content))
+  dataset_name = DATASET.get(dataset)
+  assert dataset_name is not None, 'dataset arg not supported'
+  if mode == 'fetch':
+    url = 'http://files.grouplens.org/datasets/movielens/' \
+          + dataset_name + '.zip'
+    r = requests.get(url)
+    zipfile = ZipFile(BytesIO(r.content))
+  elif mode == 'local':
+    zipfile = ZipFile(dataset_name + '.zip')
+  else:
+    raise ValueError('mode arg not supported')
 
   # ['ml-latest-small/', 'ml-latest-small/links.csv',
   # 'ml-latest-small/tags.csv', 'ml-latest-small/ratings.csv',
@@ -81,7 +98,7 @@ def setup_database():
   # movieId,imdbId,tmdbId
   # 1,0114709,862
   for lineno, line in enumerate(
-      zipfile.open('ml-latest-small/links.csv').readlines()):
+      zipfile.open(dataset_name + '/links.csv').readlines()):
     if lineno == 0:
       assert line.decode('utf-8').strip() == 'movieId,imdbId,tmdbId'
       continue
@@ -92,7 +109,7 @@ def setup_database():
   # movieId,title,genres
   # 1,Toy Story (1995),Adventure|Animation|Children|Comedy|Fantasy
   for lineno, line in enumerate(
-      zipfile.open('ml-latest-small/movies.csv').readlines()):
+      zipfile.open(dataset_name + '/movies.csv').readlines()):
     if lineno == 0:
       assert line.decode('utf-8').strip() == 'movieId,title,genres'
       continue
@@ -117,7 +134,7 @@ def setup_database():
 
   # ratings.csv
   for lineno, line in enumerate(
-      zipfile.open('ml-latest-small/ratings.csv').readlines()):
+      zipfile.open(dataset_name + '/ratings.csv').readlines()):
     if lineno == 0:
       assert line.decode('utf-8').strip() == 'userId,movieId,rating,timestamp'
       continue
@@ -128,12 +145,19 @@ def setup_database():
   # userId,movieId,tag,timestamp
   # 2,60756,funny,1445714994
   for lineno, line in enumerate(
-      zipfile.open('ml-latest-small/tags.csv').readlines()):
+      zipfile.open(dataset_name + '/tags.csv').readlines()):
     if lineno == 0:
       assert line.decode('utf-8').strip() == 'userId,movieId,tag,timestamp'
       continue
+    decoded = line.decode('utf-8').strip()
+    # handle case where the tag has comma in it hence double quoted:
+    # 449,2428,"Brilliant, but Lazy",1509119084
+    user_id, movie_id, rest = decoded.split(',', 2)
+    tag, timestamp = rest.rsplit(',', 1)
+    if rest[0] == rest[-1] == '"':
+      tag = tag[1:-1]
     c.execute("INSERT INTO tags VALUES (?, ?, ?, datetime(?, 'unixepoch'))",
-              (*line.decode('utf-8').strip().split(','),))
+              (user_id, movie_id, tag, timestamp))
 
   conn.commit()
   conn.close()
