@@ -24,12 +24,18 @@ def setup_database():
 
   # TODO any smarter schema design?
   # Create table
+
+  # links table
   c.execute('''CREATE TABLE links (
                  MovieId INTEGER,
                  ImdbId INTEGER,
                  TmdbId INTEGER,
-                 FOREIGN KEY (MovieId) REFERENCES movies (MovieId)
+                 FOREIGN KEY (MovieId) REFERENCES movies(MovieId)
                )''')
+  c.execute('''CREATE UNIQUE INDEX links_MovieId_index
+               ON links(MovieId)''')
+
+  # movies table
   # sqlite does not support array data type, hence in Genres the input will be
   # kept as the raw format - string value of "action|romance|<...>".
   c.execute('''CREATE TABLE movies (
@@ -38,20 +44,38 @@ def setup_database():
                  Year INTEGER, 
                  Genres TEXT
                )''')
+  # Genres will be used to search substring (LIKE in WHERE clause), hence
+  # indexed.
+  c.execute('''CREATE INDEX movies_Genres_index
+               ON movies(Genres)''')
+
+  # ratings table
   c.execute('''CREATE TABLE ratings (
                  UserId INTEGER,
                  MovieId INTEGER,
                  Rating REAL,
                  Timestamp TIMESTAMP,
-                 FOREIGN KEY(MovieId) REFERENCES movies (MovieId)
+                 FOREIGN KEY(MovieId) REFERENCES movies(MovieId)
                )''')
+  # Two join columns are indexed.
+  c.execute('''CREATE INDEX ratings_UserId_index
+               ON ratings(UserId)''')
+  c.execute('''CREATE INDEX ratings_MovieId_index
+               ON ratings(MovieId)''')
+
+  # tags table
   c.execute('''CREATE TABLE tags (
                  UserId INTEGER,
                  MovieId INTEGER,
                  Tag TEXT,
                  Timestamp TIMESTAMP,
-                 FOREIGN KEY (MovieId) REFERENCES movies (MovieId)
+                 FOREIGN KEY (MovieId) REFERENCES movies(MovieId)
                )''')
+  # Two join columns are indexed.
+  c.execute('''CREATE INDEX tags_UserId_index
+               ON tags(UserId)''')
+  c.execute('''CREATE INDEX tags_MovieId_index
+               ON tags(MovieId)''')
 
   # links.csv
   # movieId,imdbId,tmdbId
