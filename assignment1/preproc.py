@@ -1,5 +1,6 @@
 import sqlite3
 from io import BytesIO
+import unicodedata
 from zipfile import ZipFile
 
 import requests
@@ -39,7 +40,6 @@ def setup_database(dataset: str, mode: str):
   conn = sqlite3.connect('assignment1.db')
   c = conn.cursor()
 
-  # TODO any smarter schema design?
   # Create table
 
   # links table
@@ -53,25 +53,38 @@ def setup_database(dataset: str, mode: str):
                ON links(MovieId)''')
 
   # movies table
-  # sqlite does not support array data type, hence in Genres the input will be
-  # kept as the raw format - string value of "action|romance|<...>".
+  # The genres are "expanded" into columns of ints (sqlite does not have
+  # boolean type) to make the query faster (and make the database smaller).
   c.execute('''CREATE TABLE movies (
                  MovieId INTEGER PRIMARY KEY,
                  Title TEXT,
-                 Year INTEGER, 
-                 Genres TEXT
+                 Year INTEGER,
+                 Action INTEGER DEFAULT 0,
+                 Adventure INTEGER DEFAULT 0,
+                 Animation INTEGER DEFAULT 0,
+                 Children INTEGER DEFAULT 0,
+                 Comedy INTEGER DEFAULT 0,
+                 Crime INTEGER DEFAULT 0,
+                 Documentary INTEGER DEFAULT 0,
+                 Drama INTEGER DEFAULT 0,
+                 Fantasy INTEGER DEFAULT 0,
+                 FilmNoir INTEGER DEFAULT 0,
+                 Horror INTEGER DEFAULT 0,
+                 Musical INTEGER DEFAULT 0,
+                 Mystery INTEGER DEFAULT 0,
+                 Romance INTEGER DEFAULT 0,
+                 SciFi INTEGER DEFAULT 0,
+                 Thriller INTEGER DEFAULT 0,
+                 War INTEGER DEFAULT 0,
+                 Western INTEGER DEFAULT 0
                )''')
-  # Genres will be used to search substring (LIKE in WHERE clause), hence
-  # indexed.
-  c.execute('''CREATE INDEX movies_Genres_index
-               ON movies(Genres)''')
 
   # ratings table
   c.execute('''CREATE TABLE ratings (
                  UserId INTEGER,
                  MovieId INTEGER,
                  Rating REAL,
-                 Timestamp TIMESTAMP,
+                 Year INTEGER,
                  FOREIGN KEY(MovieId) REFERENCES movies(MovieId)
                )''')
   # Two join columns are indexed.
@@ -79,13 +92,18 @@ def setup_database(dataset: str, mode: str):
                ON ratings(UserId)''')
   c.execute('''CREATE INDEX ratings_MovieId_index
                ON ratings(MovieId)''')
-
+  # optimize for GROUP BY Rating
+  c.execute('''CREATE INDEX ratings_Rating_index
+               ON ratings(Rating)''')
+  # optimize for GROUP BY Rating, Year
+  c.execute('''CREATE INDEX ratings_Rating_Year_index
+                 ON ratings(Rating, Year)''')
   # tags table
   c.execute('''CREATE TABLE tags (
                  UserId INTEGER,
                  MovieId INTEGER,
                  Tag TEXT,
-                 Timestamp TIMESTAMP,
+                 Year INTEGER,
                  FOREIGN KEY (MovieId) REFERENCES movies(MovieId)
                )''')
   # Two join columns are indexed.
@@ -114,23 +132,35 @@ def setup_database(dataset: str, mode: str):
       assert line.decode('utf-8').strip() == 'movieId,title,genres'
       continue
     decoded = line.decode('utf-8').strip()
+    decoded = unicodedata.normalize('NFKD', decoded)
     # hack to clean some bad encoding
     decoded = decoded.replace(', The (', ' (')
     # split in three steps to avoid the movie names with comma
     movie_id, rest = decoded.split(',', 1)
     rest, genres = rest.rsplit(',', 1)
+    genres = decode_genres(genres.split('|'))
+    # eg: 96608,Runaway Brain (1995) ,Animation|Comedy|Sci-Fi
+    # remove the trailing white space from the title-year part.
+    rest = rest.strip(' ')
     # remove the opening and closing double quote, if present.
     if rest[0] == rest[-1] == '"':
       rest = rest[1:-1]
-    try:
-      title, year = rest.rsplit(' ', 1)
-    except ValueError:
-      # eg. 156605,Paterson,(no genres listed)
+    # if the title-year does not end with ')', then year info is missing.
+    # eg. 156605,Paterson,(no genres listed)
+    if rest[-1] != ')':
       title = rest
-      year = 'null'  # if year not present, set to 'null'
-    year = year[1:-1]
-    c.execute('INSERT INTO movies VALUES (?, ?, ?, ?)',
-              (movie_id, title, year, genres,))
+      year = 'null'
+    else:
+      lb_idx = rest.rfind('(')
+      title, year = rest[: lb_idx].strip(' '), rest[lb_idx + 1: -1]
+      # some garbage data that I am too lazy to handle
+      # eg 79607,"Millions Game, The (Das Millionenspiel)",Action|Drama|Sci-Fi
+      if len(year) != 4:
+        continue
+    c.execute('''INSERT INTO movies VALUES (
+                   ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                 )''',
+              (movie_id, title, year, *genres,))
 
   # ratings.csv
   for lineno, line in enumerate(
@@ -138,7 +168,9 @@ def setup_database(dataset: str, mode: str):
     if lineno == 0:
       assert line.decode('utf-8').strip() == 'userId,movieId,rating,timestamp'
       continue
-    c.execute("INSERT INTO ratings VALUES (?, ?, ?, datetime(?, 'unixepoch'))",
+    c.execute('''INSERT INTO ratings VALUES (
+                   ?, ?, ?, substr(datetime(?, 'unixepoch'), 0, 5)
+                 )''',
               (*line.decode('utf-8').strip().split(','),))
 
   # tags.csv
@@ -161,3 +193,71 @@ def setup_database(dataset: str, mode: str):
 
   conn.commit()
   conn.close()
+
+
+def decode_genres(genres: list):
+  """
+  Garbage fire. It stinks yet you don't want to touch it.
+  """
+  action = \
+    adventure = \
+    animation = \
+    children = \
+    comedy = \
+    crime = \
+    documentary = \
+    drama = \
+    fantasy = \
+    film_noir = \
+    horror = \
+    musical = \
+    mystery = \
+    romance = \
+    sci_fi = \
+    thriller = \
+    war = \
+    western = 0
+  for g in genres:
+    if g == 'Action':
+      action += 1
+    if g == 'Adventure':
+      adventure += 1
+    if g == 'Animation':
+      animation += 1
+    if g == "Children's":
+      children += 1
+    if g == 'Comedy':
+      comedy += 1
+    if g == 'Crime':
+      crime += 1
+    if g == 'Documentary':
+      documentary += 1
+    if g == 'Drama':
+      drama += 1
+    if g == 'Fantasy':
+      fantasy += 1
+    if g == 'Film-Noir':
+      film_noir += 1
+    if g == 'Horror':
+      horror += 1
+    if g == 'Musical':
+      musical += 1
+    if g == 'Mystery':
+      mystery += 1
+    if g == 'Romance':
+      romance += 1
+    if g == 'Sci-Fi':
+      sci_fi += 1
+    if g == 'Thriller':
+      thriller += 1
+    if g == 'War':
+      war += 1
+    if g == 'Western':
+      western += 1
+  return action, adventure, animation, children, comedy, crime, documentary, \
+         drama, fantasy, film_noir, horror, musical, mystery, romance, sci_fi, \
+         thriller, war, western
+
+
+if __name__ == '__main__':
+  setup_database(dataset='S', mode='fetch')

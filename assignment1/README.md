@@ -1,0 +1,4 @@
+- install dependency: `pip install -r requirements.txt`
+- create database: `python3 preproc.py`
+- start the web server: `python3 app.py`
+  - web server is hosted at `localhost:5000`
