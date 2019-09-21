@@ -116,6 +116,17 @@ def genres_distribution_per_year():
                        'Western': sums[17]})
   return jsonify([{'data': v, 'year': k} for k, v in temp.items()])
 
+@app.route('/movies-genres-list', methods=['GET'])
+def movies_genres_list():
+  query = '''  
+          SELECT Title, Genres FROM movies
+          '''
+  result = []
+  query_result = execute_query(query)
+  for title, genres in query_result:
+    result.append({'title': title, 'Genres': genres.split('|')})
+  return jsonify(result)
+
 
 if __name__ == '__main__':
   app.debug = True

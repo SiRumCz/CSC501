@@ -59,6 +59,7 @@ def setup_database(dataset: str, mode: str):
                  MovieId INTEGER PRIMARY KEY,
                  Title TEXT,
                  Year INTEGER,
+                 Genres TEXT,
                  Action INTEGER DEFAULT 0,
                  Adventure INTEGER DEFAULT 0,
                  Animation INTEGER DEFAULT 0,
@@ -138,7 +139,7 @@ def setup_database(dataset: str, mode: str):
     # split in three steps to avoid the movie names with comma
     movie_id, rest = decoded.split(',', 1)
     rest, genres = rest.rsplit(',', 1)
-    genres = decode_genres(genres.split('|'))
+    decoded_genres = decode_genres(genres.split('|'))
     # eg: 96608,Runaway Brain (1995) ,Animation|Comedy|Sci-Fi
     # remove the trailing white space from the title-year part.
     rest = rest.strip(' ')
@@ -158,9 +159,9 @@ def setup_database(dataset: str, mode: str):
       if len(year) != 4:
         continue
     c.execute('''INSERT INTO movies VALUES (
-                   ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                   ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                  )''',
-              (movie_id, title, year, *genres,))
+              (movie_id, title, year, genres, *decoded_genres,))
 
   # ratings.csv
   for lineno, line in enumerate(
