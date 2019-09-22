@@ -1,7 +1,12 @@
 import React, { Component } from 'react';
 import './App.css';
 
-import { BarChart } from './components/BarChart.component';
+import { BarChartSample } from './components/BarChart.component';
+// import {PieChartSample} from "./components/PieChart.component";
+
+import {LinePlot} from "./components/LinePlot.component";
+import {GroupBarChart} from "./components/GroupBarChart.component";
+import {WordCloudSample} from "./components/WordCloud.component";
 
 class App extends Component{
 
@@ -9,20 +14,32 @@ class App extends Component{
         super(props);
 
         this.state = {
-            barData: [
-                {title: 1, value: 243}, {title: 2, value: 187}, {title: 3, value: 234}, {title: 4, value: 104}, {title: 5, value: 83}
-                ]
-            ,
-            width: 700,
-            height: 300
+            genres: [
+                'Action', 'Adventure', 'Animation', 'Children', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Fantasy', 'FilmNoir', 'Horror', 'Musical', 'Mystery', 'Romance', 'SciFi', 'Thriller', 'War', 'Western'
+            ],
+            localIP: 'http://127.0.0.1:5000'
         }
     }
 
     render () {
         return(
         <div className="App">
-            <h1> Bar chart for movies by ranking:</h1>
-            <BarChart width={700} height={300} data={this.state.barData}/>
+            <h1 className={'margin-top-50'}> Bar chart for movies by rating:</h1>
+            <div className={'margin-top-50'}>
+            <BarChartSample ip={this.state.localIP} />
+            </div>
+            <hr/>
+            <h1 className={'margin-top-50'}> Different genres in the past years:</h1>
+            <LinePlot ip={this.state.localIP}  genres={this.state.genres}/>
+            <hr/>
+            <h1 className={'margin-top-50'}> Distribution of different Genres throughout years:</h1>
+            <GroupBarChart ip={this.state.localIP} genres={this.state.genres}/>
+            <hr/>
+            <h1 className={'margin-top-50'}> Word Cloud for movie tags:</h1>
+            <WordCloudSample ip={this.state.localIP}/>
+            <hr/>
+
+
         </div>
         )
     }

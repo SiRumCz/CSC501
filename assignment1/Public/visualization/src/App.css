@@ -7,6 +7,9 @@
   height: 40vmin;
   pointer-events: none;
 }
+svg {
+  padding: 10px;
+}
 
 .App-header {
   background-color: #282c34;
@@ -18,7 +21,9 @@
   font-size: calc(10px + 2vmin);
   color: white;
 }
-
+.margin-top-50 {
+  margin-top: 50px;
+}
 .App-link {
   color: #61dafb;
 }
