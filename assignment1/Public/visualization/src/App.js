@@ -2,8 +2,11 @@ import React, { Component } from 'react';
 import './App.css';
 
 import { BarChartSample } from './components/BarChart.component';
-import {PieChartSample} from "./components/PieChart.component";
+// import {PieChartSample} from "./components/PieChart.component";
+
+import {LinePlot} from "./components/LinePlot.component";
 import {GroupBarChart} from "./components/GroupBarChart.component";
+import {WordCloudSample} from "./components/WordCloud.component";
 
 class App extends Component{
 
@@ -60,6 +63,24 @@ class App extends Component{
                     label: 'Fiction',
                     values: [{x: '2015', y: 6, title:"Fiction"}, {x: '2016', y: 5, title:"Fiction"}, {x: '2017', y: 8, title:"Fiction"}, {x: '2018', y: 2, title:"Fiction"}]
                 }
+            ],
+            linePLot: [
+                {
+                    label: 'Comedy',
+                    values: [{x: 2010, y: 2}, {x: 2011, y: 5}, {x: 2012, y: 6}, {x: 2013, y: 6.5}, {x: 2014, y: 6}, {x: 2015, y: 6}, {x: 2016, y: 7}, {x: 2017, y: 8}]
+                },
+                {
+                    label: 'Action',
+                    values: [{x: 2010, y: 3}, {x: 2011, y: 4}, {x: 2012, y: 7}, {x: 2013, y: 8}, {x: 2014, y: 7}, {x: 2015, y: 7}, {x: 2016, y: 7.8}, {x: 2017, y: 9}]
+                },
+                {
+                    label: 'Drama',
+                    values: [{x: 2010, y: 4}, {x: 2011, y: 2}, {x: 2012, y: 3}, {x: 2013, y: 6}, {x: 2014, y: 10}, {x: 2015, y: 9}, {x: 2016, y: 2}, {x: 2017, y: 4}]
+                },
+                {
+                    label: 'Horror',
+                    values: [{x: 2010, y: 1}, {x: 2011, y: 5}, {x: 2012, y: 2}, {x: 2013, y: 3}, {x: 2014, y: 8}, {x: 2015, y: 4}, {x: 2016, y: 5}, {x: 2017, y: 3}]
+                }
             ]
         }
     }
@@ -72,14 +93,19 @@ class App extends Component{
             <BarChartSample data={this.state.barData}/>
             </div>
             <hr/>
-            <h1 className={'margin-top-50'}> Different ranking in different years:</h1>
-            <PieChartSample data={this.state.pieData[0]}/>
-            <PieChartSample data={this.state.pieData[1]}/>
-            <PieChartSample data={this.state.pieData[2]}/>
-            <PieChartSample data={this.state.pieData[3]}/>
+            <h1 className={'margin-top-50'}> Different ratings in different genres across past several years:</h1>
+            {/*<PieChartSample data={this.state.pieData[0]}/>*/}
+            {/*<PieChartSample data={this.state.pieData[1]}/>*/}
+            {/*<PieChartSample data={this.state.pieData[2]}/>*/}
+            {/*<PieChartSample data={this.state.pieData[3]}/>*/}
+            <LinePlot data={this.state.linePLot}/>
+            <hr/>
+            <h1 className={'margin-top-50'}> Word Cloud of movie tags:</h1>
+            <WordCloudSample/>
             <hr/>
             <h1 className={'margin-top-50'}> Distribution of different Genres throughout years:</h1>
             <GroupBarChart data={this.state.groupBarData}/>
+
         </div>
         )
     }
