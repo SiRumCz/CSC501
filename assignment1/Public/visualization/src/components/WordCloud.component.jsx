@@ -2,15 +2,38 @@ import React, {Component} from  'react';
 
 import WordCloud from "react-d3-cloud";
 
-import tags from './tags';
 
 import './WordCloud.style.css'
 export class WordCloudSample extends Component {
 
+    constructor(props){
+        super(props);
+
+        this.state = {
+            tags: []
+        }
+
+    }
+
+    componentDidMount() {
+
+        fetch(`${this.props.ip}/tags-wordcloud`)
+            .then(result => (result.json()))
+            .then(data => {
+                let tags = data.map(tag => ({text: tag.tag, value: tag.count}))
+                this.setState({tags: tags})
+            })
+
+    }
+
+
+
+
+
     render() {
-        const fontSizeMapper = word => word.value ;
+        const fontSizeMapper = word => word.value+5 ;
         const rotate = word => {
-            const x = Math.round(Math.round(Math.random() * 5) + 1);
+            const x = Math.round(Math.random() * 5) + 1;
             if( x === 5){
                 return 90;
             }
@@ -31,17 +54,18 @@ export class WordCloudSample extends Component {
             }
         };
         return (
-            <div id={'word-cloud'}>
+            this.state.tags &&
+            (<div id={'word-cloud'}>
             <WordCloud
 
-                width={1000}
-                height={750}
-                data={tags}
+                width={1400}
+                height={1150}
+                data={this.state.tags}
                 fontSizeMapper={fontSizeMapper}
                 rotate={rotate}
                 padding={10}
             />
-            </div>
+            </div>)
         );
     }
 }
