@@ -1,6 +1,6 @@
 import sqlite3
-from io import BytesIO
 import unicodedata
+from io import BytesIO
 from zipfile import ZipFile
 
 import requests
@@ -115,6 +115,7 @@ def setup_database(dataset: str, mode: str):
   c.execute('''CREATE INDEX tags_Tag_index
                ON tags(tag)''')
 
+  print('inserting links.csv ...')
   # links.csv
   # movieId,imdbId,tmdbId
   # 1,0114709,862
@@ -126,6 +127,7 @@ def setup_database(dataset: str, mode: str):
     c.execute('INSERT INTO links VALUES (?, ?, ?)',
               (*line.decode('utf-8').strip().split(','),))
 
+  print('inserting movies.csv ...')
   # movies.csv
   # movieId,title,genres
   # 1,Toy Story (1995),Adventure|Animation|Children|Comedy|Fantasy
@@ -165,17 +167,47 @@ def setup_database(dataset: str, mode: str):
                  )''',
               (movie_id, title, year, *genres,))
 
+  print('inserting ratings.csv ...')
   # ratings.csv
   for lineno, line in enumerate(
       zipfile.open(dataset_name + '/ratings.csv').readlines()):
     if lineno == 0:
       assert line.decode('utf-8').strip() == 'userId,movieId,rating,timestamp'
       continue
+    if lineno % 500000 == 0:
+      print('  insert line', lineno, '...')
     c.execute('''INSERT INTO ratings VALUES (
                    ?, ?, ?, substr(datetime(?, 'unixepoch'), 0, 5)
                  )''',
               (*line.decode('utf-8').strip().split(','),))
+  # Create a prepopulated table with some basic statistics about each movie's
+  # rating. This drastically reduces the computation when querying ratings table
+  # with GROUP BY MovieId is applied (from 1 minute down to 50ms).
+  print('creating rating_stats table ...')
+  # We cannot alter table in SQLite hence create a temp one without foreign key
+  # first.
+  c.execute('''CREATE TABLE temp AS
+                 SELECT MovieId,
+                        count(*) as NumRatings,
+                        avg(Rating) AS AvgRating,
+                        max(Rating) AS MaxRating,
+                        min(Rating) as MinRating
+                 FROM ratings
+                 GROUP BY MovieId''')
+  c.execute('''CREATE TABLE rating_stats (
+                   MovieId INTEGER,
+                   NumRatings INTEGER,
+                   AvgRating REAL,
+                   MaxRating REAL,
+                   MinRating REAL,
+                   FOREIGN KEY (MovieId) REFERENCES movies(MovieId)
+                 )''')
+  c.execute('''CREATE UNIQUE INDEX rating_stats_index on rating_stats(MovieId)
+               ''')
+  c.execute('''INSERT INTO rating_stats SELECT * FROM temp''')
+  c.execute('''DROP TABLE temp''')
 
+  print('inserting tags.csv ...')
   # tags.csv
   # userId,movieId,tag,timestamp
   # 2,60756,funny,1445714994
@@ -227,7 +259,7 @@ def decode_genres(genres: list):
       adventure += 1
     if g == 'Animation':
       animation += 1
-    if g == "Children's":
+    if g == "Children":
       children += 1
     if g == 'Comedy':
       comedy += 1
@@ -263,4 +295,4 @@ def decode_genres(genres: list):
 
 
 if __name__ == '__main__':
-  setup_database(dataset='S', mode='fetch')
+  setup_database(dataset='L', mode='local')

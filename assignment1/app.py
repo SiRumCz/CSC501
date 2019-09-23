@@ -1,10 +1,12 @@
-from collections import defaultdict
+import heapq
+import pprint
 import sqlite3
+from collections import defaultdict
 from timeit import default_timer as timer
 
-from flask_cors import CORS
 from flask import Flask, jsonify
 from flask import g as flask_globals
+from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
@@ -151,6 +153,61 @@ def tags_wordcloud():
              LIMIT 100'''
   result = execute_query(query)
   return jsonify([{'tag': t, 'count': cnt} for cnt, t in result])
+
+
+@app.route('/top-5-rated-movies-each-genres', methods=['GET'])
+def top_five_rated_movies_each_genres():
+  """
+  [
+  { 'data': [ { 'avgRating': 4.149695428470046,
+                'movie': 'Matrix',
+                'numRatings': 84545,
+                'scale': 0.22566033908438674,
+                'year': 1999},
+              { 'avgRating': 4.120454684348836,
+                'movie': 'Star Wars: Episode IV - A New Hope',
+                'numRatings': 81815,
+                'scale': 0.21837365476597198,
+                'year': 1977},
+              ...
+            ],
+    'genre': 'SciFi'
+  },
+  { 'data': [ { 'avgRating': 4.173971387139363,
+                'movie': 'Pulp Fiction',
+                'numRatings': 92406,
+                'scale': 0.22705348433211542,
+                'year': 1994},
+              ...
+            ],
+    'genre': 'Thriller'
+  },
+  ...
+  ]
+  """
+  genres = ['Action', 'Adventure', 'Animation', 'Children', 'Comedy', 'Crime',
+            'Documentary', 'Drama', 'Fantasy', 'FilmNoir', 'Horror', 'Musical',
+            'Mystery', 'Romance', 'SciFi', 'Thriller', 'War', 'Western']
+  query_template = '''
+  SELECT movies.MovieId, Title, Year, AvgRating, NumRatings
+  FROM movies
+  INNER JOIN rating_stats ON movies.MovieId == rating_stats.MovieId
+  WHERE movies.{genre} = 1
+  ORDER BY NumRatings DESC
+  LIMIT 5
+  '''
+  query_result = {g: execute_query(query_template.format(genre=g)) for g in
+                  genres}
+  ret_val = []
+  for genre, result in query_result.items():
+    subtotal = sum(row[4] for row in result)
+    ret_val.append({
+      "genre": genre,
+      "data": [{"movie": row[1], "year": row[2], "avgRating": row[3],
+                "numRatings": row[4], "scale": row[4] / subtotal} for row in
+               result]
+    })
+  return jsonify(ret_val)
 
 
 if __name__ == '__main__':
