@@ -196,9 +196,7 @@ def basic_nodelink_v1():
     "Romance","SciFi","Thriller","War","Western"
   ]
   # how many times each genre has appeared
-  node_weights_query = ''' 
-              SELECT {}
-              FROM movies '''.format('SUM('+'), SUM('.join(node_keys)+')')
+  node_weights_query = ''' SELECT {} FROM movies '''.format('SUM('+'), SUM('.join(node_keys)+')')
   # genre links 
   links_query = ''' SELECT {} FROM movies '''.format(', '.join(node_keys))
   node_weights = execute_query(node_weights_query)[0]
