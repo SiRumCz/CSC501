@@ -164,8 +164,26 @@ def tags_wordcloud():
 def basic_nodelink_v1():
   """
   Weighted Genre link nodes.
-  
-
+  [
+    {
+      "links": [
+        {
+          "source": 1, 
+          "target": 2
+        }, 
+        ... 
+      ]
+      "nodes": [
+        {
+          "group": 1, 
+          "id": 0, 
+          "name": "Action", 
+          "value": 1828
+        }, 
+        ...
+      ]
+    }
+  ]
   """
   # how many times each genre has appeared
   nodeWeightsQuery = ''' 
@@ -200,9 +218,7 @@ def basic_nodelink_v1():
   for link in linksResults:
     validGenreIds = [i for i,v in enumerate(link) if v == 1]
     links.extend(idsToLinks(validGenreIds))
-  
   return jsonify([{"nodes":nodes, "links": links}])
-
 
 
 if __name__ == '__main__':
