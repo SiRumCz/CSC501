@@ -1,10 +1,12 @@
-from collections import defaultdict
+import heapq
+import pprint
 import sqlite3
+from collections import defaultdict
 from timeit import default_timer as timer
 
-from flask_cors import CORS
 from flask import Flask, jsonify
 from flask import g as flask_globals
+from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
@@ -151,6 +153,94 @@ def tags_wordcloud():
              LIMIT 100'''
   result = execute_query(query)
   return jsonify([{'tag': t, 'count': cnt} for cnt, t in result])
+
+
+@app.route('/basic-link-node-diagram', methods=['GET'])
+def basic_link_node_diagram():
+  """
+  API for the basic node link diagram. The master node is the genre and the
+  slave nodes are the top 5 most popular rated movies. Only the top 5 most rated
+  genres are returned.
+
+  For each node (master and slave), a scaling factor, |scale| is also provided
+  for the front end to determine the size of each node.
+
+  All the |scale| of the master nodes sum to 1, and within each master node,
+  the |scale| of slave nodes sum to 1.
+
+  [
+  { 'data': [ { 'avgRating': 4.149695428470046,
+                'movie': 'Matrix',
+                'numRatings': 84545,
+                'scale': 0.22566033908438674,
+                'year': 1999},
+              { 'avgRating': 4.120454684348836,
+                'movie': 'Star Wars: Episode IV - A New Hope',
+                'numRatings': 81815,
+                'scale': 0.21837365476597198,
+                'year': 1977},
+              ...
+            ],
+    'genre': 'SciFi',
+    'numMovies': 4740199,
+    'scale': 0.06398958962782558
+  },
+  { 'data': [ { 'avgRating': 4.173971387139363,
+                'movie': 'Pulp Fiction',
+                'numRatings': 92406,
+                'scale': 0.22705348433211542,
+                'year': 1994},
+              ...
+            ],
+    'genre': 'Thriller',
+    'numMovies': 7489619,
+    'scale': 0.10110496337364008
+  },
+  ...
+  ]
+  """
+  genres = ['Action', 'Adventure', 'Animation', 'Children', 'Comedy', 'Crime',
+            'Documentary', 'Drama', 'Fantasy', 'FilmNoir', 'Horror', 'Musical',
+            'Mystery', 'Romance', 'SciFi', 'Thriller', 'War', 'Western']
+  # TODO: have a num_ratings_per_genre table.
+  # First calculate the number of movies per genre, and the portion.
+  num_movies_per_genre = dict()
+  for genre in genres:
+    num_movies_per_genre[genre] = execute_query('''
+       SELECT sum(NumRatings)
+       FROM rating_stats
+       INNER JOIN movies ON movies.MovieId = rating_stats.MovieId
+       WHERE movies.{genre} = 1'''.format(genre=genre))[0][0]
+  total_num_movies = sum(v for v in num_movies_per_genre.values())
+  # key: genre, value: portion of the movies in this genre out of the total.
+  scale_per_genre = {k: v / total_num_movies for k, v in
+                     num_movies_per_genre.items()}
+  query_template = '''
+  SELECT movies.MovieId, Title, Year, AvgRating, NumRatings
+  FROM movies
+  INNER JOIN rating_stats ON movies.MovieId == rating_stats.MovieId
+  WHERE movies.{genre} = 1
+  ORDER BY NumRatings DESC
+  LIMIT 5
+  '''
+  query_result = {g: execute_query(query_template.format(genre=g)) for g in
+                  genres}
+  ret_val = []
+  for genre, result in query_result.items():
+    subtotal = sum(row[4] for row in result)
+    ret_val.append({
+      "genre": genre,
+      "numRatings": num_movies_per_genre[genre],
+      "scale": scale_per_genre[genre],
+      "data": [{"movie": row[1], "year": row[2], "avgRating": row[3],
+                "numRatings": row[4], "scale": row[4] / subtotal} for row in
+               result]
+    })
+  top_n = heapq.nlargest(5, ret_val, key=lambda x: x['numRatings'])
+  if app.debug:
+    pp = pprint.PrettyPrinter(indent=2)
+    pp.pprint(top_n)
+  return jsonify(top_n)
 
 
 if __name__ == '__main__':
