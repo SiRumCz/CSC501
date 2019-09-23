@@ -38,7 +38,7 @@ def execute_query(query: str):
   return ret_val
 
 
-def ids_to_links(group: list):
+def ids_to_links(group: list) -> list:
   links = []
   for i in range(len(group)):
     for j in range(i+1, len(group)):
@@ -46,7 +46,7 @@ def ids_to_links(group: list):
   return links
 
 
-def links_trim(existing_links: list, link_group: list):
+def links_trim(existing_links, link_group):
   # TODO: link trims. Increment weight for any duplicate link
   return None
 
