@@ -38,7 +38,7 @@ def execute_query(query: str):
   return ret_val
 
 
-def idsToLinks(group: list):
+def ids_to_links(group: list):
   links = []
   for i in range(len(group)):
     for j in range(i+1, len(group)):
@@ -160,6 +160,7 @@ def tags_wordcloud():
   result = execute_query(query)
   return jsonify([{'tag': t, 'count': cnt} for cnt, t in result])
 
+
 @app.route('/basic-node-link-v1', methods=['GET'])
 def basic_nodelink_v1():
   """
@@ -185,39 +186,31 @@ def basic_nodelink_v1():
     }
   ]
   """
-  # how many times each genre has appeared
-  nodeWeightsQuery = ''' 
-              SELECT SUM(Action), SUM(Adventure), SUM(Animation), 
-              SUM(Children), SUM(Comedy), SUM(Crime), SUM(Documentary),
-              SUM(Drama), SUM(Fantasy), SUM(FilmNoir),
-              SUM(Horror), SUM(Musical), SUM(Mystery), SUM(Romance), 
-              SUM(SciFi), SUM(Thriller),SUM(War), SUM(Western)
-              FROM movies '''
-  # genre links 
-  linksQuery = ''' SELECT Action, Adventure, Animation, Children,
-              Comedy, Crime, Documentary, Drama, Fantasy, FilmNoir,
-              Horror, Musical, Mystery, Romance, SciFi, Thriller,
-              War, Western FROM movies '''
-  nodeWeights = execute_query(nodeWeightsQuery)[0]
-  linksResults = execute_query(linksQuery)
-  nodeKeys = ["Action","Adventure","Animation","Children","Comedy","Crime",
+  node_keys = ["Action","Adventure","Animation","Children","Comedy","Crime",
     "Documentary","Drama","Fantasy","FilmNoir","Horror","Musical","Mystery",
     "Romance","SciFi","Thriller","War","Western"
   ]
+  # how many times each genre has appeared
+  node_weights_query = ''' 
+              SELECT {}
+              FROM movies '''.format('SUM('+'), SUM('.join(node_keys)+')')
+  # genre links 
+  links_query = ''' SELECT {} FROM movies '''.format(', '.join(node_keys))
+  node_weights = execute_query(node_weights_query)[0]
+  links_results = execute_query(links_query)
   nodes = []
   links = []
-  for index in range(len(nodeKeys)):
+  for index in range(len(node_keys)):
     nodes.append(
       {
         "id": index,
-        "name": nodeKeys[index],
-        "value": nodeWeights[index],
-        "group": index+1
+        "name": node_keys[index],
+        "value": node_weights[index]
       }
     )
-  for link in linksResults:
-    validGenreIds = [i for i,v in enumerate(link) if v == 1]
-    links.extend(idsToLinks(validGenreIds))
+  for link in links_results:
+    valid_genreIds = [i for i,v in enumerate(link) if v == 1]
+    links.extend(ids_to_links(valid_genreIds))
   return jsonify([{"nodes":nodes, "links": links}])
 
 
