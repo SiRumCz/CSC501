@@ -7,6 +7,7 @@ import { BarChartSample } from './components/BarChart.component';
 import {LinePlot} from "./components/LinePlot.component";
 import {GroupBarChart} from "./components/GroupBarChart.component";
 import {WordCloudSample} from "./components/WordCloud.component";
+import {NodeLink} from "./components/NodeLink.component";
 
 class App extends Component{
 
@@ -38,7 +39,8 @@ class App extends Component{
             <h1 className={'margin-top-50'}> Word Cloud for movie tags:</h1>
             <WordCloudSample ip={this.state.localIP}/>
             <hr/>
-
+            <h1 className={'margin-top-50'}> Node-Link diagram:</h1>
+            <NodeLink/>
 
         </div>
         )
