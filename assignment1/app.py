@@ -38,6 +38,14 @@ def execute_query(query: str):
   return ret_val
 
 
+def idsToLinks(group: list):
+  links = []
+  for i in range(len(group)):
+    for j in range(i+1, len(group)):
+      links.append({"source": group[i], "target": group[j]})
+  return links
+
+
 @app.route('/health', methods=['GET'])
 def health_check():
   """
@@ -151,6 +159,50 @@ def tags_wordcloud():
              LIMIT 100'''
   result = execute_query(query)
   return jsonify([{'tag': t, 'count': cnt} for cnt, t in result])
+
+@app.route('/basic-node-link-v1', methods=['GET'])
+def basic_nodelink_v1():
+  """
+  Weighted Genre link nodes.
+  
+
+  """
+  # how many times each genre has appeared
+  nodeWeightsQuery = ''' 
+              SELECT SUM(Action), SUM(Adventure), SUM(Animation), 
+              SUM(Children), SUM(Comedy), SUM(Crime), SUM(Documentary),
+              SUM(Drama), SUM(Fantasy), SUM(FilmNoir),
+              SUM(Horror), SUM(Musical), SUM(Mystery), SUM(Romance), 
+              SUM(SciFi), SUM(Thriller),SUM(War), SUM(Western)
+              FROM movies '''
+  # genre links 
+  linksQuery = ''' SELECT Action, Adventure, Animation, Children,
+              Comedy, Crime, Documentary, Drama, Fantasy, FilmNoir,
+              Horror, Musical, Mystery, Romance, SciFi, Thriller,
+              War, Western FROM movies '''
+  nodeWeights = execute_query(nodeWeightsQuery)[0]
+  linksResults = execute_query(linksQuery)
+  nodeKeys = ["Action","Adventure","Animation","Children","Comedy","Crime",
+    "Documentary","Drama","Fantasy","FilmNoir","Horror","Musical","Mystery",
+    "Romance","SciFi","Thriller","War","Western"
+  ]
+  nodes = []
+  links = []
+  for index in range(len(nodeKeys)):
+    nodes.append(
+      {
+        "id": index,
+        "name": nodeKeys[index],
+        "value": nodeWeights[index],
+        "group": index+1
+      }
+    )
+  for link in linksResults:
+    validGenreIds = [i for i,v in enumerate(link) if v == 1]
+    links.extend(idsToLinks(validGenreIds))
+  
+  return jsonify([{"nodes":nodes, "links": links}])
+
 
 
 if __name__ == '__main__':
