@@ -46,6 +46,11 @@ def ids_to_links(group: list):
   return links
 
 
+def links_trim(existing_links: list, link_group: list):
+  # TODO: link trims. Increment weight for any duplicate link
+  return None
+
+
 @app.route('/health', methods=['GET'])
 def health_check():
   """
@@ -209,8 +214,8 @@ def basic_nodelink_v1():
       }
     )
   for link in links_results:
-    valid_genreIds = [i for i,v in enumerate(link) if v == 1]
-    links.extend(ids_to_links(valid_genreIds))
+    valid_genre_ids = [i for i,v in enumerate(link) if v == 1]
+    links.extend(ids_to_links(valid_genre_ids))
   return jsonify([{"nodes":nodes, "links": links}])
 
 
