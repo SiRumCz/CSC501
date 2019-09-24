@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ReactDOM from 'react-dom';
 
 import {BarChart} from 'react-d3-components'
 
@@ -30,13 +31,14 @@ export class BarChartSample extends Component {
                 barData[0].values = data.map(rs => ({x: rs.counts.toString(), y: rs.rating}))
                 this.setState({barData: barData});
             })
-
+        const node = ReactDOM.findDOMNode(this);
+        const g_x_element = node.querySelector('.x.axis.label')
+        g_x_element.setAttribute('y', '46' )
     }
 
 
 
     render() {
-        const data = this.props.data;
         const tooltip = function(x, y0, y) {
             return <div className={'tooltipP'}>{y.toString()}</div>;
         };
@@ -49,6 +51,8 @@ export class BarChartSample extends Component {
                 data={this.state.barData}
                 width={400}
                 height={400}
+                yAxis={{label: "Ratings Count"}}
+                xAxis={{label: "Ratings"}}
                 margin={{top: 10, bottom: 50, left: 50, right: 10}}
                 tooltipMode={'mouse'}
                 tooltipHtml={tooltip}

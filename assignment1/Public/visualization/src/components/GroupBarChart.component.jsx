@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 
 import {BarChart} from 'react-d3-components';
+import ReactDOM from "react-dom";
 
 export class GroupBarChart extends Component {
 
@@ -44,12 +45,13 @@ export class GroupBarChart extends Component {
                             value.y = 0;
                         }
                     })
-                    console.log(data.values);
                     data.values.sort(this.compare);
                 })
                 this.setState({groupBarData: groupData})
             })
-
+        const node = ReactDOM.findDOMNode(this);
+        const g_x_element = node.querySelector('.x.axis.label')
+        g_x_element.setAttribute('y', '46' )
     }
 
     compare = (a, b) => {
@@ -65,11 +67,12 @@ export class GroupBarChart extends Component {
     render(){
 
         const tooltip = function(x, y0, y, title) {
-
             return <div className={'tooltipP'}>{title}</div>;
         };
         return(
             <BarChart
+                yAxis={{label: "Ratings Count"}}
+                xAxis={{label: "Year"}}
                 groupedBars
                 data={this.state.groupBarData}
                 width={1400}
