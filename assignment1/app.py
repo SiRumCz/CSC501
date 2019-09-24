@@ -154,7 +154,7 @@ def tags_wordcloud():
     ...
   ]
   """
-  query = '''SELECT count(*) as Cnt, Tag FROM tags
+  query = '''SELECT count(DISTINCT UserId) as Cnt, Tag FROM tags
              GROUP BY tag
              ORDER BY cnt DESC
              LIMIT 100'''
