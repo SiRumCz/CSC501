@@ -44,7 +44,6 @@ export class GroupBarChart extends Component {
                             value.y = 0;
                         }
                     })
-                    console.log(data.values);
                     data.values.sort(this.compare);
                 })
                 this.setState({groupBarData: groupData})
@@ -65,7 +64,6 @@ export class GroupBarChart extends Component {
     render(){
 
         const tooltip = function(x, y0, y, title) {
-
             return <div className={'tooltipP'}>{title}</div>;
         };
         return(
