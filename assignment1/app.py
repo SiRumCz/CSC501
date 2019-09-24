@@ -38,6 +38,15 @@ def execute_query(query: str):
   return ret_val
 
 
+def ids_to_links(group: list) -> list:
+  links = []
+  # i: source node, j: target node
+  for i in range(len(group)):
+    for j in range(i+1, len(group)):
+      links.append((group[i], group[j]))
+  return links
+
+
 @app.route('/health', methods=['GET'])
 def health_check():
   """
@@ -151,6 +160,75 @@ def tags_wordcloud():
              LIMIT 100'''
   result = execute_query(query)
   return jsonify([{'tag': t, 'count': cnt} for cnt, t in result])
+
+
+@app.route('/basic-node-link-v1', methods=['GET'])
+def basic_nodelink_v1():
+  """
+  Weighted Genre link nodes.
+    {
+      "links": [
+        {
+          "source": 1, 
+          "target": 2,
+          "weight": 247
+        }, 
+        ... 
+      ]
+      "nodes": [
+        {
+          "id": 0, 
+          "name": "Action", 
+          "value": 1828
+        }, 
+        ...
+      ]
+    }
+  """
+  node_keys = ["Action","Adventure","Animation","Children","Comedy","Crime",
+    "Documentary","Drama","Fantasy","FilmNoir","Horror","Musical","Mystery",
+    "Romance","SciFi","Thriller","War","Western"
+  ]
+  # how many times each genre has appeared
+  basic_query = ''' SELECT {} FROM movies '''
+  node_weights_query = basic_query.format('SUM('+'), SUM('.join(node_keys)+')')
+  # genre links 
+  genres_query = basic_query.format(', '.join(node_keys))
+  node_weights = execute_query(node_weights_query)[0]
+  genres_results = execute_query(genres_query)
+  nodes = []
+  raw_links = []
+  # list to store existing links for duplicate filtering
+  for index in range(len(node_keys)):
+    nodes.append(
+      {
+        "id": index,
+        "name": node_keys[index],
+        "value": node_weights[index]
+      }
+    )
+  for genres in genres_results:
+    valid_genre_ids = [i for i,v in enumerate(genres) if v == 1]
+    genre_links = ids_to_links(valid_genre_ids)
+    for link in genre_links:
+      link = tuple(sorted(link))
+      # check existence of current link
+      # return link index if True, otherwise return None
+      link_index = next((i for i,l in enumerate(raw_links) if link in l), None)
+      if link_index is None:
+        raw_links.append({link: 1})
+      else:
+        raw_links[link_index][link] += 1
+  # reformate links
+  links = []
+  for raw_link in raw_links:
+    for link_tuple,link_weight in raw_link.items():
+      links.append({
+        "source": link_tuple[0],
+        "target": link_tuple[1],
+        "weight": link_weight
+        })
+  return jsonify({"nodes":nodes, "links": links})
 
 
 if __name__ == '__main__':
