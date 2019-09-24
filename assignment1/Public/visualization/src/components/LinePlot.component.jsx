@@ -5,6 +5,7 @@ import * as d3 from 'd3';
 import {LineChart} from 'react-d3-components';
 
 import './LinePlot.style.css'
+import ReactDOM from "react-dom";
 
 export class LinePlot extends Component {
 
@@ -41,6 +42,9 @@ export class LinePlot extends Component {
                 this.setState({lines: lineData})
 
             })
+        const node = ReactDOM.findDOMNode(this);
+        const g_x_element = node.querySelector('.x.axis.label')
+        g_x_element.setAttribute('y', '46' )
     }
     render(){
         const tooltipLine = function(label, data) {
@@ -52,9 +56,10 @@ export class LinePlot extends Component {
                     data={this.state.lines}
                     width={800}
                     height={400}
+                    yAxis={{label: "Number of movies in a specific genre"}}
                     margin={{top: 10, bottom: 50, left: 50, right: 10}}
                     tooltipHtml={tooltipLine}
-                    xAxis={{tickFormat: d3.format("d")}}
+                    xAxis={{tickFormat: d3.format("d"), label: "Year"}}
 
             />)
         )

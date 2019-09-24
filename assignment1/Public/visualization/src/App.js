@@ -7,6 +7,7 @@ import { BarChartSample } from './components/BarChart.component';
 import {LinePlot} from "./components/LinePlot.component";
 import {GroupBarChart} from "./components/GroupBarChart.component";
 import {WordCloudSample} from "./components/WordCloud.component";
+import {NodeLink} from "./components/NodeLink.component";
 
 class App extends Component{
 
@@ -32,13 +33,14 @@ class App extends Component{
             <h1 className={'margin-top-50'}> Different genres in the past years:</h1>
             <LinePlot ip={this.state.localIP}  genres={this.state.genres}/>
             <hr/>
-            <h1 className={'margin-top-50'}> Distribution of different Genres throughout years:</h1>
+            <h1 className={'margin-top-50'}> Distribution of different Ratings throughout years:</h1>
             <GroupBarChart ip={this.state.localIP} genres={this.state.genres}/>
             <hr/>
             <h1 className={'margin-top-50'}> Word Cloud for movie tags:</h1>
             <WordCloudSample ip={this.state.localIP}/>
             <hr/>
-
+            <h1 className={'margin-top-50'}> Node-Link diagram:</h1>
+            <NodeLink/>
 
         </div>
         )
