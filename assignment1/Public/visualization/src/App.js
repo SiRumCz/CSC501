@@ -33,7 +33,7 @@ class App extends Component{
             <h1 className={'margin-top-50'}> Different genres in the past years:</h1>
             <LinePlot ip={this.state.localIP}  genres={this.state.genres}/>
             <hr/>
-            <h1 className={'margin-top-50'}> Distribution of different Genres throughout years:</h1>
+            <h1 className={'margin-top-50'}> Distribution of different Ratings throughout years:</h1>
             <GroupBarChart ip={this.state.localIP} genres={this.state.genres}/>
             <hr/>
             <h1 className={'margin-top-50'}> Word Cloud for movie tags:</h1>

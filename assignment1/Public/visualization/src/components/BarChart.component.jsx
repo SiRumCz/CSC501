@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
+import ReactDOM from 'react-dom';
 
-import {BarChart} from 'react-d3-components'
+import {BarChart, LineChart} from 'react-d3-components'
 
 import * as d3 from 'd3';
 
@@ -30,7 +31,9 @@ export class BarChartSample extends Component {
                 barData[0].values = data.map(rs => ({x: rs.counts.toString(), y: rs.rating}))
                 this.setState({barData: barData});
             })
-
+        const node = ReactDOM.findDOMNode(this);
+        const g_x_element = node.querySelector('.x.axis.label')
+        g_x_element.setAttribute('y', '46' )
     }
 
 
@@ -46,9 +49,12 @@ export class BarChartSample extends Component {
         return(
             this.state.barData &&
             (<BarChart
+                ref={this.x_axis_labels}
                 data={this.state.barData}
                 width={400}
                 height={400}
+                yAxis={{label: "Ratings Count"}}
+                xAxis={{label: "Ratings"}}
                 margin={{top: 10, bottom: 50, left: 50, right: 10}}
                 tooltipMode={'mouse'}
                 tooltipHtml={tooltip}
