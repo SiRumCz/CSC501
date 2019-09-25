@@ -39,12 +39,18 @@ export class NodeLink extends Component {
             }))
         ;
 
+        let maxWeight = 0
+        for (var i=0; i<graph.links.length; i++) {
+            if (graph.links[i].weight > maxWeight) { maxWeight = graph.links[i].weight; }
+        }
+
         let link = g.append("g")
             .attr("class", "links")
             .selectAll("line")
             .data(graph.links)
             .enter().append("line")
-            .attr("stroke-width", function(d) { return Math.sqrt(d.weight/40); });
+            .attr("stroke-width", function(d) { return Math.sqrt(d.weight/40); })
+            .attr("opacity", function(d) {return Math.sqrt(d.weight/maxWeight)});
 
         let node = g.append("g")
             .attr("class", "nodes")
