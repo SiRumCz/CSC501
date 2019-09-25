@@ -33,25 +33,16 @@ export class WordCloudSample extends Component {
     render() {
         const fontSizeMapper = word => word.value+5 ;
         const rotate = word => {
-            const x = Math.round(Math.random() * 5) + 1;
-            if( x === 5){
-                return 90;
-            }
-            else if (x === 4) {
-                return 45;
-            }
-            else if (x === 3) {
+            const x = Math.round(Math.random() * 2) + 1;
+     
+             if (x === 2) {
                 return 0;
-            }
-            else if (x === 2) {
-                return -45;
             }
             else if (x === 1) {
-                return -90;
+                return 90;
             }
-            else {
-                return 0;
-            }
+
+            return 0;
         };
         return (
             this.state.tags &&
