@@ -20,7 +20,7 @@ export class WordCloudSample extends Component {
         fetch(`${this.props.ip}/tags-wordcloud`)
             .then(result => (result.json()))
             .then(data => {
-                let tags = data.map(tag => ({text: tag.tag, value: tag.count}))
+                let tags = data.map(tag => ({text: tag.tag, value: Math.floor(tag.count/30)}))
                 this.setState({tags: tags})
             })
 
