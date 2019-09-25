@@ -24,25 +24,27 @@ class App extends Component{
 
     render () {
         return(
-        <div className="App">
-            <h1 className={'margin-top-50'}> Bar chart for movies by rating:</h1>
-            <div className={'margin-top-50'}>
-            <BarChartSample ip={this.state.localIP} />
-            </div>
-            <hr/>
-            <h1 className={'margin-top-50'}> Different genres in the past years:</h1>
-            <LinePlot ip={this.state.localIP}  genres={this.state.genres}/>
-            <hr/>
-            <h1 className={'margin-top-50'}> Distribution of different Ratings throughout years:</h1>
-            <GroupBarChart ip={this.state.localIP} genres={this.state.genres}/>
-            <hr/>
-            <h1 className={'margin-top-50'}> Word Cloud for movie tags:</h1>
-            <WordCloudSample ip={this.state.localIP}/>
-            <hr/>
-            <h1 className={'margin-top-50'}> Node-Link diagram:</h1>
-            <NodeLink/>
+            <div className="App">
+                <h1 className={'margin-top-50'}> Bar chart for movies by rating:</h1>
+                <div className={'margin-top-50'}>
+                    <BarChartSample ip={this.state.localIP} />
+                </div>
+                <hr/>
+                <h1 className={'margin-top-50'}> Different genres in the past years:</h1>
+                <LinePlot ip={this.state.localIP}  genres={this.state.genres}/>
+                <hr/>
+                <h1 className={'margin-top-50'}> Distribution of different Ratings throughout years:</h1>
+                <GroupBarChart ip={this.state.localIP} genres={this.state.genres}/>
+                <hr/>
+                <h1 className={'margin-top-50'}> Word Cloud for movie tags:</h1>
+                <WordCloudSample ip={this.state.localIP}/>
+                <hr/>
+                <h1 className={'margin-top-50'}> Node-Link diagram:</h1>
+                <div>
+                    <NodeLink ip={this.state.localIP}/>
+                </div>
 
-        </div>
+            </div>
         )
     }
 }
