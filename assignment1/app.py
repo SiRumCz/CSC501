@@ -1,7 +1,6 @@
-import heapq
-import pprint
-import sqlite3
+import math
 from collections import defaultdict
+import sqlite3
 from timeit import default_timer as timer
 
 from flask import Flask, jsonify
@@ -18,6 +17,7 @@ def get_db():
   """
   if 'db' not in flask_globals:
     flask_globals.db = sqlite3.connect('assignment1.db')
+  flask_globals.db.create_function('log10', 1, math.log10)
   return flask_globals.db
 
 
@@ -32,7 +32,7 @@ def close_db(err=None):
 
 def execute_query(query: str):
   if 'db' not in flask_globals:
-    flask_globals.db = sqlite3.connect('assignment1.db')
+    flask_globals.db = get_db()
   c = flask_globals.db.cursor()
   start = timer()
   ret_val = c.execute(query).fetchall()
@@ -162,6 +162,20 @@ def tags_wordcloud():
              LIMIT 100'''
   result = execute_query(query)
   return jsonify([{'tag': t, 'count': cnt} for cnt, t in result])
+
+
+@app.route('/tags-wordcloud-v2', methods=['GET'])
+def tags_wordcloud_v2():
+  total = execute_query('SELECT count(DISTINCT UserId) FROM tags')[0][0]
+  query = '''SELECT count(DISTINCT MovieId) *
+                      log10( count(DISTINCT UserId)*1.0 / {total} ) as weight,
+                      Tag
+               FROM tags
+               GROUP BY Tag
+               ORDER BY weight DESC
+               LIMIT 50'''.format(total=total)
+  result = execute_query(query)
+  return jsonify([{'tag': t, 'count': weight} for weight, t in result])
 
 
 @app.route('/top-5-rated-movies-each-genres', methods=['GET'])
