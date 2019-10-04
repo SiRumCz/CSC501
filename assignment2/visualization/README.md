@@ -1,0 +1,3 @@
+This directory contains visualization for the assignment. It is a web application built with React.js. 
+
+More features to follow...
