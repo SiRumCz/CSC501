@@ -1107,7 +1107,7 @@ export class LeafletMap extends Component {
                     steps={7}
                     mode='e'
                     style={style}
-                    onEachFeature={(feature, layer) => layer.bindPopup(feature.properties.label)}
+                    onEachFeature={(feature, layer) => layer.bindPopup('Zone: ' + feature.properties.zone + "\n ID: " + feature.properties.objectid)}
                     ref={(el) => this.choropleth = el.leafletElement}
                 />
             </Map>
