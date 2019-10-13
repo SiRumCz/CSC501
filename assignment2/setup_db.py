@@ -39,7 +39,11 @@ def setup_database():
         tip_amount real,
         tolls_amount real,
         improvement_surcharge real,
-        total_amount real
+        total_amount real,
+        FOREIGN KEY (RatecodeID) REFERENCES ratecodes(ratecodeID),
+        FOREIGN KEY (PULocationID) REFERENCES zones(LocationID),
+        FOREIGN KEY (DOLocationID) REFERENCES zones(LocationID),
+        FOREIGN KEY (payment_type) REFERENCES payments(paymentID)
     );
     ''')
 
