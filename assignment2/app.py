@@ -67,8 +67,8 @@ def avg_passenger_counts():
   return jsonify([{'areaId': a[0], 'avgPassengers': a[1]} for a in result])
 
 
-@app.route('/rush-pickup-hours', methods=['GET'])
-def rush_pickup_hours():
+@app.route('/pickup-rush-hours', methods=['GET'])
+def pickup_rush_hours():
   """
   New York taxi pick-up rush hours.
   [
