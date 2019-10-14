@@ -1,4 +1,4 @@
-import sqlite3
+import sqlite3, datetime
 from timeit import default_timer as timer
 
 from flask import Flask, jsonify
@@ -150,28 +150,55 @@ def payment_trend_timeline():
               ORDER BY dd, payment_type;
           '''
   result = execute_query(query)
-  payment_types = [
-    {1: 'Credit card'},
-    {2: 'Cash'},
-    {3: 'No charge'},
-    {4: 'Dispute'},
-    {5: 'Unknown'},
-    {6: 'Voided trip'}
-    ]
   trends = []
-  prevDate = None
-  currPayment = 1
+  prev_date = None
+  prev_payment = 0
+  # processing data
   for ptusage in result:
     date, payment_type, usage = ptusage
-    if prevDate is None or date != prevDate:
+    # new date
+    if prev_date is None or date != prev_date:
+      # complete last date data
+      if len(trends) != 0:
+        while(prev_payment < 6):
+          trends[-1]['data'].append({'paymentID': prev_payment+1, 'usage': 0})
+          prev_payment += 1
+      # complete missing date
+      if prev_date is not None:
+        prev_date_dt = datetime.datetime.strptime(prev_date, '%Y-%m-%d').date() + datetime.timedelta(days=1)
+        curr_date_dt = datetime.datetime.strptime(date, '%Y-%m-%d').date()
+        while(curr_date_dt > prev_date_dt):
+          trends.append({
+            'date': prev_date_dt.strftime('%Y-%m-%d'), 'data': [
+              {'paymentID': 1, 'usage': 0},
+              {'paymentID': 2, 'usage': 0},
+              {'paymentID': 3, 'usage': 0},
+              {'paymentID': 4, 'usage': 0},
+              {'paymentID': 5, 'usage': 0},
+              {'paymentID': 6, 'usage': 0},
+            ]
+          })
+          prev_date_dt += datetime.timedelta(days=1)
       trends.append({
         'date': date, 'data': []
       })
-      while(payment_type > currPayment):
-        trends[-1]['data'].append({'paymentID': currPayment, 'usage': 0})
-      trends[-1]['data'].append({'paymentID': payment_type, 'usage': usage})
-      
-  return
+      prev_payment = 0
+    # complete missing payments 
+    while(payment_type > prev_payment+1):
+      if (prev_payment == 0):
+        prev_payment = 1
+      trends[-1]['data'].append({'paymentID': prev_payment, 'usage': 0})
+      prev_payment += 1
+    # add current payment
+    trends[-1]['data'].append({'paymentID': payment_type, 'usage': usage})
+    prev_date = date
+    prev_payment = payment_type
+  # complete last data
+  if (len(trends[-1]['data']) != 6):
+    while(prev_payment < 6):
+      trends[-1]['data'].append({'paymentID': prev_payment+1, 'usage': 0})
+      prev_payment += 1
+  return jsonify(trends)
 
 
 if __name__ == '__main__':
