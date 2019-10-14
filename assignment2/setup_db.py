@@ -160,11 +160,19 @@ def setup_database():
     print(' Done!')
     
     # remove data with invalid date
-    print('removing invalid data ...', end='')
+    print('removing invalid data with bad date ...', end='')
     c.execute(''' 
     DELETE FROM trips 
     WHERE tpep_pickup_datetime > DATETIME('now')
     OR tpep_dropoff_datetime > DATETIME('now');
+    ''')
+    print(' Done!')
+
+    # remove invalid trip that has 0 distance travel
+    print('removing invalid data with 0 trip distance ...', end='')
+    c.execute(''' 
+    DELETE FROM trips 
+    WHERE trip_distance = 0.0;
     ''')
     print(' Done!')
 
