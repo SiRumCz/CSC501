@@ -139,6 +139,18 @@ def payment_trend_timeline():
   """
   From 2018-12-27 to 2019-09-09 in sample data, how often each payment type has 
   been used.
+  [
+    {
+      "data": [
+          {"paymentID": 1, "usage": 123856},
+          {...},
+          ...
+        ],
+        "date": "2018-12-27"
+    },
+    {...},
+    ...
+  ]
   """
   query = ''' WITH t1 AS (
               SELECT DATE(tpep_dropoff_datetime) AS dd,
