@@ -51,7 +51,6 @@ export class LeafletMap extends Component {
                     }
                 })
                 this.setState({data, max, min})
-                console.log(this.state)
             })
     }
 
