@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "d3": "^5.12.0",
     "leaflet": "^1.5.1",
     "react": "^16.10.2",
+    "react-d3-components": "^0.9.1",
     "react-dom": "^16.10.2",
     "react-leaflet": "^2.4.0",
     "react-leaflet-choropleth": "^2.0.0",

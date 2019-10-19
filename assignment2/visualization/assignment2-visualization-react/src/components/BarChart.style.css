@@ -1,0 +1,15 @@
+#chart {
+    background-color: #F5F2EB;
+    border: 1px solid #CCC;
+}
+.tooltipP {
+    color: black;
+    background-color: #eee;
+    border-radius: 3px;
+    font-size: 16px;
+    padding: 2px 3px;
+}
+
+g .bar:hover {
+    cursor: pointer;
+}
