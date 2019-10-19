@@ -4,12 +4,80 @@ from zipfile import ZipFile
 
 DATASET = {
     'taxi' : 'taxi-sample',
+    '2018_taxi' : '2018_Yellow_Taxi_Trip_Data.csv',
     'zones' : 'taxi+_zone_lookup.csv'
 }
 
+
+def setup_2018_taxi():
+    """
+    112M raw 2018 yellow taxi trip dataset pre processing
+    """
+    # connect db
+    conn = sqlite3.connect('assignment2.db')
+    c = conn.cursor()
+    # create tables
+    # table trips
+    print('creating table 2018_trips ...', end='')
+    c.execute(''' DROP TABLE IF EXISTS 2018_trips; ''')
+    c.execute('''
+    CREATE TABLE 2018_trips (
+        VendorID int,
+        tpep_pickup_datetime timestamp,
+        tpep_dropoff_datetime timestamp,
+        passenger_count int,
+        trip_distance real,
+        RatecodeID int,
+        store_and_fwd_flag int,
+        PULocationID int,
+        DOLocationID int,
+        payment_type int,
+        fare_amount real,
+        extra real,
+        mta_tax real,
+        tip_amount real,
+        tolls_amount real,
+        improvement_surcharge real,
+        total_amount real,
+        FOREIGN KEY (RatecodeID) REFERENCES ratecodes(ratecodeID),
+        FOREIGN KEY (PULocationID) REFERENCES zones(LocationID),
+        FOREIGN KEY (DOLocationID) REFERENCES zones(LocationID),
+        FOREIGN KEY (payment_type) REFERENCES payments(paymentID)
+    );
+    ''')
+
+    for lineno, line in enumerate(
+        open(DATASET.get('2018_taxi'), 'r').readlines()):
+        if lineno == 0:
+            assert line.strip() == '\"VendorID\",\"tpep_pickup_datetime\",\"tpep_dropoff_datetime\",\"passenger_count\",\"trip_distance\",\"RatecodeID\",\"store_and_fwd_flag\",\"PULocationID\",\"DOLocationID\",\"payment_type\",\"fare_amount\",\"extra\",\"mta_tax\",\"tip_amount\",\"tolls_amount\",\"improvement_surcharge\",\"total_amount\"'
+            continue
+        decoded = line.strip()
+        val_list = decoded.split(',')
+        val_list[1:] = [x.strip('\"') for x in val_list[1:]]
+        c.execute('INSERT INTO 2018_trips VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', val_list)
+    print(' Done!')
+
+    # original count
+    c.execute(''' SELECT COUNT(*) FROM 2018_trips; ''')
+    raw_count = c.fetchone()[0]
+
+    # filter data datetime range from 2018-Jan to 2018-Dec
+    print('filtering dataset only from 2018 Jan to Dec ...', end='')
+    c.execute(
+        '''
+        DELETE FROM 2018_trips 
+        WHERE (tpep_pickup_datetime NOT BETWEEN DATETIME('2018-01-01') AND DATETIME('2019-01-01'))
+        OR (tpep_dropoff_datetime NOT BETWEEN DATETIME('2018-01-01') AND DATETIME('2019-01-01'));
+        '''
+    )
+    print('Done!')
+    conn.commit()
+    conn.close()
+
+
 def setup_database():
     """
-    Description: dataset pre processing
+    20M taxi-sample dataset pre processing
     """
     taxi_trips_file = DATASET.get('taxi')
     taxi_zf = ZipFile(taxi_trips_file+'.zip')
@@ -160,19 +228,11 @@ def setup_database():
     print(' Done!')
     
     # remove data with invalid date
-    print('removing invalid data with bad date ...', end='')
+    print('removing invalid data ...', end='')
     c.execute(''' 
     DELETE FROM trips 
     WHERE tpep_pickup_datetime > DATETIME('now')
     OR tpep_dropoff_datetime > DATETIME('now');
-    ''')
-    print(' Done!')
-
-    # remove invalid trip that has 0 distance travel
-    print('removing invalid data with 0 trip distance ...', end='')
-    c.execute(''' 
-    DELETE FROM trips 
-    WHERE trip_distance = 0.0;
     ''')
     print(' Done!')
 
