@@ -358,6 +358,17 @@ def create_temp_data():
         GROUP BY month, payment_type
         ORDER BY month, payment_type;
     ''')
+    # /payment-trend-timeline
+    print('creating /interval-tree-passengers-2018 temp table')
+    c.execute('''
+    CREATE TABLE temp_interval_tree_passengers_2018 AS
+        SELECT passenger_count, 
+        STRFTIME('%m',MIN(tpep_pickup_datetime)) AS from_dt, 
+        STRFTIME('%m',MAX(tpep_pickup_datetime)) AS to_dt 
+        FROM trips_non_sample
+        GROUP BY passenger_count
+        ORDER BY passenger_count;
+    ''')
     conn.commit()
     conn.close()
 
@@ -366,7 +377,9 @@ def drop_2018_taxi_data():
     # connect db
     conn = sqlite3.connect('assignment2.db')
     c = conn.cursor()
+    print('dropping 2018 112M data from database')
     c.execute(''' DROP TABLE IF EXISTS trips_non_sample; ''')
+    print('executing sqlite vacuum;')
     c.execute(''' vacuum; ''') # shrink db file
     conn.commit()
     conn.close()
@@ -376,5 +389,5 @@ if __name__ == '__main__':
     # setup_database()
     # setup_2018_taxi()
     # filter_2018_trips()
-    # create_temp_data()
+    create_temp_data()
     drop_2018_taxi_data()

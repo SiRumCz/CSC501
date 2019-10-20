@@ -330,6 +330,65 @@ def payment_trend_timeline_2018():
   return jsonify(trends)
 
 
+@app.route('/interval-tree-passengers', methods=['GET'])
+def interval_tree_passengers():
+  """
+  Interval tree data. X: year-month period of taxi sample data, Y: passenger number.
+  {
+    "YAxisMax": 8,
+    "data": [
+      {"fromDate": "2018-12", "passengerNum": 0, "toDate": "2018-12"},
+      {...},
+      ...
+    ]
+  }
+  """
+  query = ''' SELECT passenger_count, 
+        STRFTIME('%Y-%m',MIN(tpep_pickup_datetime)) AS from_dt, 
+        STRFTIME('%Y-%m',MAX(tpep_pickup_datetime)) AS to_dt 
+        FROM trips
+        GROUP BY passenger_count
+        ORDER BY passenger_count; '''
+  data_result = execute_query(query)
+  query = ''' SELECT MAX(passenger_count) FROM trips; '''
+  y_axis_max = execute_query(query)[0][0]
+  return jsonify(
+    {
+      'YAxisMax' : y_axis_max,
+      'data' : [{'passengerNum': a[0],
+                'fromDate': a[1], 
+                'toDate': a[2]} for a in data_result]
+    }
+  )
+
+
+@app.route('/interval-tree-passengers-2018', methods=['GET'])
+def interval_tree_passengers_2018():
+  """
+  Interval tree data. X: month period of 2018, Y: passenger number.
+  {
+    "YAxisMax": 192,
+    "data": [
+      {"fromDate": 1, "passengerNum": 0, "toDate": 12},
+      {...},
+      ...
+    ]
+  }
+  """
+  query = ''' SELECT * FROM temp_interval_tree_passengers_2018; '''
+  data_result = execute_query(query)
+  query = ''' SELECT MAX(passenger_count) FROM temp_interval_tree_passengers_2018; '''
+  y_axis_max = execute_query(query)[0][0]
+  return jsonify(
+    {
+      'YAxisMax' : y_axis_max,
+      'data' : [{'passengerNum': a[0],
+                'fromDate': int(a[1]), 
+                'toDate': int(a[2])} for a in data_result]
+    }
+  )
+
+
 if __name__ == '__main__':
   app.debug = True
   app.teardown_appcontext(close_db)
