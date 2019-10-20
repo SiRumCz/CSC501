@@ -386,8 +386,8 @@ def drop_2018_taxi_data():
 
     
 if __name__ == '__main__':
-    # setup_database()
-    # setup_2018_taxi()
-    # filter_2018_trips()
+    setup_database()
+    setup_2018_taxi()
+    filter_2018_trips()
     create_temp_data()
     drop_2018_taxi_data()
