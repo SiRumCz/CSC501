@@ -1,5 +1,4 @@
 import sqlite3, csv
-import pandas as pd
 
 from datetime import datetime
 from zipfile import ZipFile
