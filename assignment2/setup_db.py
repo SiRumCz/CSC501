@@ -368,6 +368,7 @@ def drop_2018_taxi_data():
     conn = sqlite3.connect('assignment2.db')
     c = conn.cursor()
     c.execute(''' DROP TABLE IF EXISTS trips_non_sample; ''')
+    c.execute(''' vacuum; ''') # shrink db file
     conn.commit()
     conn.close()
 
