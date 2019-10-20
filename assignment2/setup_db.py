@@ -1,4 +1,6 @@
 import sqlite3, csv
+import pandas as pd
+
 from datetime import datetime
 from zipfile import ZipFile
 
@@ -18,10 +20,10 @@ def setup_2018_taxi():
     c = conn.cursor()
     # create tables
     # table trips
-    print('creating table 2018_trips ...', end='')
-    c.execute(''' DROP TABLE IF EXISTS 2018_trips; ''')
+    print('creating table trips_non_sample ...')
+    c.execute(''' DROP TABLE IF EXISTS trips_non_sample; ''')
     c.execute('''
-    CREATE TABLE 2018_trips (
+    CREATE TABLE trips_non_sample (
         VendorID int,
         tpep_pickup_datetime timestamp,
         tpep_dropoff_datetime timestamp,
@@ -45,32 +47,78 @@ def setup_2018_taxi():
         FOREIGN KEY (payment_type) REFERENCES payments(paymentID)
     );
     ''')
-
+    count = 0
     for lineno, line in enumerate(
         open(DATASET.get('2018_taxi'), 'r').readlines()):
         if lineno == 0:
-            assert line.strip() == '\"VendorID\",\"tpep_pickup_datetime\",\"tpep_dropoff_datetime\",\"passenger_count\",\"trip_distance\",\"RatecodeID\",\"store_and_fwd_flag\",\"PULocationID\",\"DOLocationID\",\"payment_type\",\"fare_amount\",\"extra\",\"mta_tax\",\"tip_amount\",\"tolls_amount\",\"improvement_surcharge\",\"total_amount\"'
+            assert line.strip() == 'VendorID,tpep_pickup_datetime,tpep_dropoff_datetime,passenger_count,trip_distance,RatecodeID,store_and_fwd_flag,PULocationID,DOLocationID,payment_type,fare_amount,extra,mta_tax,tip_amount,tolls_amount,improvement_surcharge,total_amount'
             continue
         decoded = line.strip()
         val_list = decoded.split(',')
         val_list[1:] = [x.strip('\"') for x in val_list[1:]]
-        c.execute('INSERT INTO 2018_trips VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', val_list)
+        val_list[1] = datetime.strptime(val_list[1], '%m/%d/%Y %I:%M:%S %p')
+        val_list[2] = datetime.strptime(val_list[2], '%m/%d/%Y %I:%M:%S %p')
+        if val_list[6] == 'N':
+            val_list[6] = 0
+        else:
+            val_list[6] = 1
+        count += 1
+        if count % 500000 == 0:
+            print(count)
+        c.execute('INSERT INTO trips_non_sample VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', val_list)
     print(' Done!')
+    conn.commit()
+    conn.close()
 
+def filter_2018_trips():
+    # connect db
+    conn = sqlite3.connect('assignment2.db')
+    c = conn.cursor()
     # original count
-    c.execute(''' SELECT COUNT(*) FROM 2018_trips; ''')
+    c.execute(''' SELECT COUNT(*) FROM trips_non_sample; ''')
     raw_count = c.fetchone()[0]
+    print('total data size: {}'.format(raw_count))
 
-    # filter data datetime range from 2018-Jan to 2018-Dec
-    print('filtering dataset only from 2018 Jan to Dec ...', end='')
+    # filter data with datetime range from 2018-Jan to 2018-Dec
+    print('filtering dataset down to period 2018 Jan to Dec ...', end='')
     c.execute(
         '''
-        DELETE FROM 2018_trips 
+        DELETE FROM trips_non_sample 
         WHERE (tpep_pickup_datetime NOT BETWEEN DATETIME('2018-01-01') AND DATETIME('2019-01-01'))
         OR (tpep_dropoff_datetime NOT BETWEEN DATETIME('2018-01-01') AND DATETIME('2019-01-01'));
         '''
     )
     print('Done!')
+
+    print('removing duplicate data ...', end='')
+    c.execute(''' 
+    DELETE FROM trips_non_sample 
+    WHERE rowid NOT IN (
+        SELECT MIN(rowid)
+        FROM trips_non_sample
+        GROUP BY VendorID,
+        tpep_pickup_datetime,
+        tpep_dropoff_datetime,
+        passenger_count,
+        trip_distance,
+        RatecodeID,
+        store_and_fwd_flag,
+        PULocationID,
+        DOLocationID,
+        payment_type,
+        fare_amount,
+        extra,
+        mta_tax,
+        tip_amount,
+        tolls_amount,
+        improvement_surcharge,
+        total_amount
+        ) ''')
+    print(' Done!')
+
+    c.execute(''' SELECT COUNT(*) FROM trips_non_sample; ''')
+    filtered_count = c.fetchone()[0]
+    print('{} filtered !'.format(raw_count - filtered_count))
     conn.commit()
     conn.close()
 
@@ -245,4 +293,6 @@ def setup_database():
     conn.close()
     
 if __name__ == '__main__':
-  setup_database()
+    setup_database()
+    # setup_2018_taxi()
+    # filter_2018_trips()
