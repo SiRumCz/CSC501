@@ -291,8 +291,90 @@ def setup_database():
 
     conn.commit()
     conn.close()
+
+
+def create_temp_data():
+    """
+    temporary tables for original 112M large dataset
+    """
+    # connect db
+    conn = sqlite3.connect('assignment2.db')
+    c = conn.cursor()
+    # /average-passenger-counts
+    print('creating /average-passenger-counts temp table')
+    c.execute('''
+    CREATE TABLE temp_average_passenger_counts_2018 AS
+        SELECT z.LocationID,
+        ROUND(IFNULL(AVG(t.passenger_count), 0.0), 2) AS avg
+        FROM zones z
+        LEFT JOIN trips_non_sample t
+        ON (z.LocationID = t.PULocationID)
+        GROUP BY z.LocationID
+        ORDER BY z.LocationID;
+    ''')
+    # /pickup-rush-hours
+    print('creating /pickup-rush-hours temp table')
+    c.execute('''
+    CREATE TABLE temp_pickup_rush_hours_2018 AS
+        WITH t1 AS (
+            SELECT STRFTIME('%H:00', tpep_pickup_datetime) AS pickup_time
+            FROM trips_non_sample)
+        SELECT pickup_time, COUNT(pickup_time) AS pickup_counts
+        FROM t1
+        GROUP BY pickup_time
+        ORDER BY pickup_time; 
+    ''')
+    # /busy-areas
+    print('creating /busy-areas temp table')
+    c.execute('''
+    CREATE TABLE temp_busy_areas_2018 AS
+        SELECT z.LocationID, COUNT(*) AS trip_counts
+        FROM zones z
+        LEFT JOIN trips_non_sample t 
+        ON (z.LocationID = t.PULocationID)
+        GROUP BY z.LocationID
+        ORDER BY z.LocationID;
+    ''')
+    # /payment-trend-usage
+    print('creating /payment-trend-usage temp table')
+    c.execute('''
+    CREATE TABLE temp_payment_trend_usage_2018 AS
+        SELECT p.paymentID, p.payment_type, COUNT(tpep_pickup_datetime) AS usage
+        FROM payments p
+        LEFT JOIN trips_non_sample t
+        ON (p.paymentID = t.payment_type)
+        GROUP BY p.paymentID
+        ORDER BY p.paymentID;
+    ''')
+    # /payment-trend-timeline
+    print('creating /payment-trend-timeline temp table')
+    c.execute('''
+    CREATE TABLE temp_payment_trend_timeline_2018 AS
+        WITH t1 AS (
+            SELECT STRFTIME('%m', tpep_dropoff_datetime) AS month,
+            payment_type
+            FROM trips_non_sample)
+        SELECT month, payment_type, COUNT(month) AS usage
+        FROM t1
+        GROUP BY month, payment_type
+        ORDER BY month, payment_type;
+    ''')
+    conn.commit()
+    conn.close()
+
+
+def drop_2018_taxi_data():
+    # connect db
+    conn = sqlite3.connect('assignment2.db')
+    c = conn.cursor()
+    c.execute(''' DROP TABLE IF EXISTS trips_non_sample; ''')
+    conn.commit()
+    conn.close()
+
     
 if __name__ == '__main__':
-    setup_database()
+    # setup_database()
     # setup_2018_taxi()
     # filter_2018_trips()
+    # create_temp_data()
+    drop_2018_taxi_data()

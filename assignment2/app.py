@@ -67,6 +67,21 @@ def avg_passenger_counts():
   return jsonify([{'areaId': a[0], 'avgPassengers': a[1]} for a in result])
 
 
+@app.route('/average-passenger-counts-2018', methods=['GET'])
+def avg_passenger_counts_2018():
+  """
+  Average passenger counts for New York taxi pick-up areas.
+  [
+    {"aid": 1, "value": 2.03},
+    {...},
+    ...
+  ]
+  """
+  query = ''' SELECT * FROM temp_average_passenger_counts_2018; '''
+  result = execute_query(query)
+  return jsonify([{'areaId': a[0], 'avgPassengers': a[1]} for a in result])
+
+
 @app.route('/pickup-rush-hours', methods=['GET'])
 def pickup_rush_hours():
   """
@@ -85,6 +100,21 @@ def pickup_rush_hours():
               GROUP BY pickup_time
               ORDER BY pickup_time; 
           '''
+  result = execute_query(query) 
+  return jsonify([{'time': a[0], 'pickups': a[1]} for a in result])
+
+
+@app.route('/pickup-rush-hours-2018', methods=['GET'])
+def pickup_rush_hours_2018():
+  """
+  New York taxi pick-up rush hours.
+  [
+    {"time": "00:00", "trips": 34805},
+    {...},
+    ...
+  ]
+  """
+  query = ''' SELECT * FROM temp_pickup_rush_hours_2018; '''
   result = execute_query(query) 
   return jsonify([{'time': a[0], 'pickups': a[1]} for a in result])
 
@@ -110,6 +140,21 @@ def num_pickup_by_areas():
   return jsonify([{'areaId': a[0], 'pickups': a[1]} for a in result])
 
 
+@app.route('/busy-areas-2018', methods=['GET'])
+def num_pickup_by_areas_2018():
+  """
+  Number of pickup events for each taxi area in data periods.
+  [
+    {"areaId": 1, "pickups": 31},
+    {...},
+    ...
+  ]
+  """
+  query = ''' SELECT * FROM temp_busy_areas_2018; '''
+  result = execute_query(query) 
+  return jsonify([{'areaId': a[0], 'pickups': a[1]} for a in result])
+
+
 @app.route('/payment-trend-usage', methods=['GET'])
 def payment_trend_usage():
   """
@@ -127,6 +172,24 @@ def payment_trend_usage():
               GROUP BY p.paymentID
               ORDER BY p.paymentID;
           '''
+  result = execute_query(query) 
+  return jsonify([{
+    'paymentId': a[0], 
+    'paymentType': a[1], 
+    'totalUsage': a[2]} for a in result])
+
+
+@app.route('/payment-trend-usage-2018', methods=['GET'])
+def payment_trend_usage_2018():
+  """
+  How many times each payment method has been used during the data period.
+  [
+    {"paymentId": 1, "paymentType": "Credit card", "totalUsage": 622051},
+    {...},
+    ...
+  ]
+  """
+  query = ''' SELECT * FROM temp_payment_trend_usage_2018; '''
   result = execute_query(query) 
   return jsonify([{
     'paymentId': a[0], 
@@ -204,6 +267,60 @@ def payment_trend_timeline():
     # add current payment
     trends[-1]['data'].append({'paymentID': payment_type, 'usage': usage})
     prev_date = date
+    prev_payment = payment_type
+  # complete last data
+  if (len(trends[-1]['data']) != 6):
+    while(prev_payment < 6):
+      trends[-1]['data'].append({'paymentID': prev_payment+1, 'usage': 0})
+      prev_payment += 1
+  return jsonify(trends)
+
+
+@app.route('/payment-trend-timeline-2018', methods=['GET'])
+def payment_trend_timeline_2018():
+  """
+  From 2018 Jan to Dec, how often each payment type has been used.
+  [
+    {
+      "data": [
+          {"paymentID": 1, "usage": 123856},
+          {...},
+          ...
+        ],
+        "month": 1
+    },
+    {...},
+    ...
+  ]
+  """
+  query = ''' SELECT * FROM temp_payment_trend_timeline_2018; '''
+  result = execute_query(query)
+  trends = []
+  prev_month = None
+  prev_payment = 0
+  # processing data
+  for ptusage in result:
+    month, payment_type, usage = ptusage
+    # new month
+    if prev_month is None or month != prev_month:
+      # complete last data
+      if len(trends) != 0:
+        while(prev_payment < 6):
+          trends[-1]['data'].append({'paymentID': prev_payment+1, 'usage': 0})
+          prev_payment += 1
+      trends.append({
+        'month': int(month), 'data': []
+      })
+      prev_payment = 0
+    # complete missing payments 
+    while(payment_type > prev_payment+1):
+      if (prev_payment == 0):
+        prev_payment = 1
+      trends[-1]['data'].append({'paymentID': prev_payment, 'usage': 0})
+      prev_payment += 1
+    # add current payment
+    trends[-1]['data'].append({'paymentID': payment_type, 'usage': usage})
+    prev_month = month
     prev_payment = payment_type
   # complete last data
   if (len(trends[-1]['data']) != 6):
