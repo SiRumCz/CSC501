@@ -25,7 +25,7 @@ export class BarChartSample extends Component {
 
     componentDidMount() {
         let barData = [{label: 'Payment Method', values:[]}];
-        fetch(`${this.props.ip}/payment-trend-usage`)
+        fetch(`${this.props.ip}/${this.props.api}`)
             .then(result => (result.json()))
             .then(data => {
                 barData[0].values = data.map(rs => ({x: rs.paymentType, y: (rs.totalUsage > 0) ? Math.floor(Math.abs(Math.log(rs.totalUsage))) : 0}))
