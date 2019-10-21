@@ -17,7 +17,8 @@ This project runs on Python 3.x and Node.js 12.x and latest Jupyter Notebook
 4. the application should direct you to a browser of the application, if it failed to do so, you can navigate to `http://localhost:3000/` to view our visualization.
 
 ## jupyter notebooks
-1. open jupyter notebook by either entering cli or clicking app icon
-2. open the notebook files
-3. after you open the notebook file, you will need to install all the libraries that the notebook imported.
-4. simply rerun every code block to get visualizations.
+1. to download the Python3 notebook and the associated files that were used to create many of the maps and videos for this assignment: https://drive.google.com/file/d/1JfZV8V-OODIqB2iCJ5dv1PDt8ZRZfvdD/view?usp=sharing
+2. open jupyter notebook by either entering cli or clicking app icon
+3. open the notebook files
+4. after you open the notebook file, you will need to install all the libraries that the notebook imported.
+5. simply rerun every code block to get visualizations.
