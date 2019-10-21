@@ -67,6 +67,21 @@ def avg_passenger_counts():
   return jsonify([{'areaId': a[0], 'avgPassengers': a[1]} for a in result])
 
 
+@app.route('/average-passenger-counts-2018', methods=['GET'])
+def avg_passenger_counts_2018():
+  """
+  Average passenger counts for New York taxi pick-up areas.
+  [
+    {"aid": 1, "value": 2.03},
+    {...},
+    ...
+  ]
+  """
+  query = ''' SELECT * FROM temp_average_passenger_counts_2018; '''
+  result = execute_query(query)
+  return jsonify([{'areaId': a[0], 'avgPassengers': a[1]} for a in result])
+
+
 @app.route('/pickup-rush-hours', methods=['GET'])
 def pickup_rush_hours():
   """
@@ -85,6 +100,21 @@ def pickup_rush_hours():
               GROUP BY pickup_time
               ORDER BY pickup_time; 
           '''
+  result = execute_query(query) 
+  return jsonify([{'time': a[0], 'pickups': a[1]} for a in result])
+
+
+@app.route('/pickup-rush-hours-2018', methods=['GET'])
+def pickup_rush_hours_2018():
+  """
+  New York taxi pick-up rush hours.
+  [
+    {"time": "00:00", "trips": 34805},
+    {...},
+    ...
+  ]
+  """
+  query = ''' SELECT * FROM temp_pickup_rush_hours_2018; '''
   result = execute_query(query) 
   return jsonify([{'time': a[0], 'pickups': a[1]} for a in result])
 
@@ -110,6 +140,21 @@ def num_pickup_by_areas():
   return jsonify([{'areaId': a[0], 'pickups': a[1]} for a in result])
 
 
+@app.route('/busy-areas-2018', methods=['GET'])
+def num_pickup_by_areas_2018():
+  """
+  Number of pickup events for each taxi area in data periods.
+  [
+    {"areaId": 1, "pickups": 31},
+    {...},
+    ...
+  ]
+  """
+  query = ''' SELECT * FROM temp_busy_areas_2018; '''
+  result = execute_query(query) 
+  return jsonify([{'areaId': a[0], 'pickups': a[1]} for a in result])
+
+
 @app.route('/payment-trend-usage', methods=['GET'])
 def payment_trend_usage():
   """
@@ -127,6 +172,24 @@ def payment_trend_usage():
               GROUP BY p.paymentID
               ORDER BY p.paymentID;
           '''
+  result = execute_query(query) 
+  return jsonify([{
+    'paymentId': a[0], 
+    'paymentType': a[1], 
+    'totalUsage': a[2]} for a in result])
+
+
+@app.route('/payment-trend-usage-2018', methods=['GET'])
+def payment_trend_usage_2018():
+  """
+  How many times each payment method has been used during the data period.
+  [
+    {"paymentId": 1, "paymentType": "Credit card", "totalUsage": 622051},
+    {...},
+    ...
+  ]
+  """
+  query = ''' SELECT * FROM temp_payment_trend_usage_2018; '''
   result = execute_query(query) 
   return jsonify([{
     'paymentId': a[0], 
@@ -211,6 +274,119 @@ def payment_trend_timeline():
       trends[-1]['data'].append({'paymentID': prev_payment+1, 'usage': 0})
       prev_payment += 1
   return jsonify(trends)
+
+
+@app.route('/payment-trend-timeline-2018', methods=['GET'])
+def payment_trend_timeline_2018():
+  """
+  From 2018 Jan to Dec, how often each payment type has been used.
+  [
+    {
+      "data": [
+          {"paymentID": 1, "usage": 123856},
+          {...},
+          ...
+        ],
+        "month": 1
+    },
+    {...},
+    ...
+  ]
+  """
+  query = ''' SELECT * FROM temp_payment_trend_timeline_2018; '''
+  result = execute_query(query)
+  trends = []
+  prev_month = None
+  prev_payment = 0
+  # processing data
+  for ptusage in result:
+    month, payment_type, usage = ptusage
+    # new month
+    if prev_month is None or month != prev_month:
+      # complete last data
+      if len(trends) != 0:
+        while(prev_payment < 6):
+          trends[-1]['data'].append({'paymentID': prev_payment+1, 'usage': 0})
+          prev_payment += 1
+      trends.append({
+        'month': int(month), 'data': []
+      })
+      prev_payment = 0
+    # complete missing payments 
+    while(payment_type > prev_payment+1):
+      if (prev_payment == 0):
+        prev_payment = 1
+      trends[-1]['data'].append({'paymentID': prev_payment, 'usage': 0})
+      prev_payment += 1
+    # add current payment
+    trends[-1]['data'].append({'paymentID': payment_type, 'usage': usage})
+    prev_month = month
+    prev_payment = payment_type
+  # complete last data
+  if (len(trends[-1]['data']) != 6):
+    while(prev_payment < 6):
+      trends[-1]['data'].append({'paymentID': prev_payment+1, 'usage': 0})
+      prev_payment += 1
+  return jsonify(trends)
+
+
+@app.route('/interval-tree-passengers', methods=['GET'])
+def interval_tree_passengers():
+  """
+  Interval tree data. X: year-month period of taxi sample data, Y: passenger number.
+  {
+    "YAxisMax": 8,
+    "data": [
+      {"fromDate": "2018-12", "passengerNum": 0, "toDate": "2018-12"},
+      {...},
+      ...
+    ]
+  }
+  """
+  query = ''' SELECT passenger_count, 
+        STRFTIME('%Y-%m',MIN(tpep_pickup_datetime)) AS from_dt, 
+        STRFTIME('%Y-%m',MAX(tpep_pickup_datetime)) AS to_dt 
+        FROM trips
+        GROUP BY passenger_count
+        ORDER BY passenger_count; '''
+  data_result = execute_query(query)
+  query = ''' SELECT MAX(passenger_count) FROM trips; '''
+  y_axis_max = execute_query(query)[0][0]
+  return jsonify(
+    {
+      'YAxisMax' : y_axis_max,
+      'data' : [{'passengerNum': a[0],
+                'fromDate': a[1], 
+                'toDate': a[2]} for a in data_result]
+    }
+  )
+
+
+@app.route('/interval-tree-passengers-2018', methods=['GET'])
+def interval_tree_passengers_2018():
+  """
+  Interval tree data. X: month period of 2018, Y: passenger number.
+  {
+    "YAxisMax": 192,
+    "data": [
+      {"fromDate": 1, "passengerNum": 0, "toDate": 12},
+      {...},
+      ...
+    ]
+  }
+  """
+  query = ''' SELECT * FROM temp_interval_tree_passengers_2018; '''
+  data_result = execute_query(query)
+  query = ''' SELECT MAX(passenger_count) FROM temp_interval_tree_passengers_2018; '''
+  y_axis_max = execute_query(query)[0][0]
+  return jsonify(
+    {
+      'YAxisMax' : y_axis_max,
+      'data' : [{'passengerNum': a[0],
+                'fromDate': int(a[1]), 
+                'toDate': int(a[2])} for a in data_result]
+    }
+  )
 
 
 if __name__ == '__main__':
