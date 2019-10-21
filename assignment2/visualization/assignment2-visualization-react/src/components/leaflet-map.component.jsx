@@ -47,7 +47,7 @@ export class LeafletMap extends Component {
                         }
                     }
                     return {
-                        id: district.areaId, value: district.pickups || (district.avgPassengers*district.avgPassengers)
+                        id: district.areaId, value: district.pickups || (district.avgPassengers*district.avgPassengers*100)
                     }
                 })
                 this.setState({data, max, min})
