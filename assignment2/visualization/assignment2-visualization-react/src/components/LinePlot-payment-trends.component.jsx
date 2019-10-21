@@ -7,7 +7,7 @@ import {LineChart} from 'react-d3-components';
 import './LinePlot.style.css'
 import ReactDOM from "react-dom";
 
-export class LinePlot extends Component {
+export class LinePlotTrends extends Component {
 
     constructor(props){
         super(props);
@@ -30,18 +30,25 @@ export class LinePlot extends Component {
 
     componentDidMount() {
         let lineData = [];
-        fetch(`${this.props.ip}/pickup-rush-hours`)
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        const payment_methods = ['Credit card', 'Cash', 'No charge', 'Dispute'];
+        fetch(`${this.props.ip}/payment-trend-timeline-2018`)
             .then(result => (result.json()))
             .then(data => {
-                    lineData.push({label: 'pickups-zipfile-connex', values: []});
-                    lineData[lineData.length-1].values = data.map(rs => ({x: parseInt(rs.time[0]+rs.time[1]), y: Math.abs(Math.sqrt(rs.pickups))}))
-                fetch(`${this.props.ip}/pickup-rush-hours-2018`)
-                    .then(result => (result.json()))
-                    .then(data => {
-                        lineData.push({label: 'pickups-2018-processed-data', values: []});
-                        lineData[lineData.length-1].values = data.map(rs => ({x: parseInt(rs.time[0]+rs.time[1]), y: Math.abs(Math.sqrt(rs.pickups))}))
-                        this.setState({lines: lineData})
+                data.forEach(obj => {
+
+                })
+                payment_methods.forEach((payment_method, i) => {
+                    lineData.push({label: payment_method, values: []});
+                    data.forEach(obj => {
+                       obj.data.forEach(payment => {
+                           if((payment.paymentID-1) === i) {
+                               lineData[lineData.length - 1].values.push({x: obj.month, y: Math.sqrt(payment.usage) })
+                           }
+                       })
                     })
+                })
+                this.setState({lines: lineData});
             })
 
 
@@ -56,15 +63,16 @@ export class LinePlot extends Component {
         return(
             this.state.lines &&
             (<LineChart
-                    data={this.state.lines}
-                    width={900}
-                    height={400}
-                    yAxis={{label: "Number of Pickups(square root)"}}
-                    margin={{top: 10, bottom: 50, left: 50, right: 10}}
-                    tooltipHtml={tooltipLine}
-                    xAxis={{tickFormat: d3.format("d"), label: "Time during the day"}}
+                data={this.state.lines}
+                width={900}
+                height={400}
+                yAxis={{label: "Number of usage(square root)"}}
+                margin={{top: 10, bottom: 50, left: 50, right: 10}}
+                tooltipHtml={tooltipLine}
+                xAxis={{tickFormat: d3.format("d"), label: "Months in 2018"}}
 
-            />)
+            />
+            )
         )
     }
 }
