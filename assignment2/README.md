@@ -10,7 +10,7 @@ This project runs on Python 3.x and Node.js 12.x and latest Jupyter Notebook
 5. run 'python setup_db.py' to process the raw data into usable sqlite database. This process will roughly take up to 3 to 4 hours. If you weish to skip this part and decide to use the existing database file, you can directly download it from https://drive.google.com/open?id=1POc_uU6bnQKImJsnsS5QQrdPVk5x01X0 .
 6. once the `assignment2.db` file is created or downloaded, run `python app.py` to have server running locally. the address is using default settings (http://localhost:5000/).
 
-## run frontend react application
+## how to run frontend react application
 1. redirect to `assignment2/visualization/assignment2-visualization-react`.
 2. run `npm install` to install dependencies.
 3. run `npm start` to have the application running in developer mode.
