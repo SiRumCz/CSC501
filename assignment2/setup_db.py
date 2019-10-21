@@ -287,6 +287,11 @@ def setup_database():
     filtered_count = c.fetchone()[0]
 
     print('{filtered} trips data filtered.'.format(filtered=raw_count-filtered_count))
+    # indexing
+    c.execute(''' CREATE INDEX trips_ratecode_id_index ON trips(RatecodeID); ''')
+    c.execute(''' CREATE INDEX trips_pu_location_id_index ON trips(PULocationID); ''')
+    c.execute(''' CREATE INDEX trips_do_location_id_index ON trips(DOLocationID); ''')
+    c.execute(''' CREATE INDEX trips_payment_type_index ON trips(payment_type); ''')
 
     conn.commit()
     conn.close()
