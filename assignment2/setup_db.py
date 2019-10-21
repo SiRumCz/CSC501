@@ -66,6 +66,13 @@ def setup_2018_taxi():
             print(count)
         c.execute('INSERT INTO trips_non_sample VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', val_list)
     print(' Done!')
+    
+    # indexing
+    c.execute(''' CREATE INDEX trips_ratecode_id_index ON trips_non_sample(RatecodeID); ''')
+    c.execute(''' CREATE INDEX trips_pu_location_id_index ON trips_non_sample(PULocationID); ''')
+    c.execute(''' CREATE INDEX trips_do_location_id_index ON trips_non_sample(DOLocationID); ''')
+    c.execute(''' CREATE INDEX trips_payment_type_index ON trips_non_sample(payment_type); ''')
+    
     conn.commit()
     conn.close()
 
