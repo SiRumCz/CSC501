@@ -18,7 +18,7 @@ docker run \
 use ':server connect' to start connection  
 set password  
 make sure the password is the same as in load_data.py (password: password)  
-to change password use ':server change-password' in the browser  
+to change password use ':server change-password' at localhost:7474  
   
 ### Expected Output  
 
