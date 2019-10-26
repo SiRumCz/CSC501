@@ -10,9 +10,15 @@ graph = Graph(password="password")
 # print(list(data_rider))
 
 ''' create Subreddit2 that stores the tab separated data from the csv file that was put on filebin '''
+# query = '''
+# USING PERIODIC COMMIT 
+# LOAD CSV WITH HEADERS FROM 'https://filebin.net/jjba8brdv6uk8v5a/sub_ex.csv?t=wcrocseo' AS line
+# CREATE (:Subreddit2 { SourceSub: line.SOURCE_SUBREDDIT, TargetSub: line.TARGET_SUBREDDIT, PostID: line.POST_ID, Timestamp: line.TIMESTAMP})
+# '''
+
 query = '''
 USING PERIODIC COMMIT 
-LOAD CSV WITH HEADERS FROM 'https://filebin.net/jjba8brdv6uk8v5a/sub_ex.csv?t=4h0ygld8' AS line
+LOAD CSV WITH HEADERS FROM 'file:/body_tab_separated.csv' AS line
 CREATE (:Subreddit2 { SourceSub: line.SOURCE_SUBREDDIT, TargetSub: line.TARGET_SUBREDDIT, PostID: line.POST_ID, Timestamp: line.TIMESTAMP})
 '''
 data = graph.run(query)
