@@ -1,8 +1,10 @@
 
 ### Basics  
 
-The tab separated columns from soc-redditHyperlinks-body.tsv were put into a .csv file and then uploaded to filebin  
-This same .csv file is in this directory titled 'body_tab_separated.csv'  
+The tab separated columns from soc-redditHyperlinks-body.tsv were put into a .csv file via Excel.  
+The tab separated columns and some of the comma separated ones from soc-redditHyperlinks-title.tsv were as well.  
+The comma separated columns that were added are the positive, negative and composite sentiments according to VADER.  
+This .csv files are in this directory in the Imports folder titled 'body_tab_separated.csv' and 'title_tab_separated.csv'.
 
 ### Run neo4j in Docker  
 
@@ -10,7 +12,7 @@ docker pull neo4j
 
 docker run \  
     --publish=7474:7474 --publish=7687:7687 \  
-    --volume=$HOME/neo4j/data:/data \ 
+    --volume=$HOME/neo4j/data:/data \  
     --volume=$PWD/import:/var/lib/neo4j/import \   
     neo4j  
   
@@ -23,7 +25,7 @@ to change password use ':server change-password' at localhost:7474
   
 ### Expected Output  
 
-computer$ python load_data.py  
+computer$ python load_data_body.py  
 <py2neo.database.Cursor object at 0x1177ea8d0>  
   
             Source           Target       ID            Time  
