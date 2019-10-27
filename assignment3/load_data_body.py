@@ -18,7 +18,7 @@ graph = Graph(password="password")
 
 query = '''
 USING PERIODIC COMMIT 
-LOAD CSV WITH HEADERS FROM 'file:/body_tab_separated.csv' AS line
+LOAD CSV WITH HEADERS FROM 'file:////body_tab_separated.csv' AS line
 CREATE (:Subreddit2 { SourceSub: line.SOURCE_SUBREDDIT, TargetSub: line.TARGET_SUBREDDIT, PostID: line.POST_ID, Timestamp: line.TIMESTAMP})
 '''
 data = graph.run(query)

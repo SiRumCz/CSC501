@@ -5,9 +5,16 @@ import pandas as pd
 graph = Graph(password="password")
 
 ''' create Subreddit1 that stores the tab separated data from sub_ex_title.csv file that was put on filebin '''
+# query = '''
+# USING PERIODIC COMMIT 
+# LOAD CSV WITH HEADERS FROM 'https://filebin.net/24au1ydtmhymcwz4/sub_ex_title.csv?t=5tttaxwm' AS line
+# CREATE (:Subreddit1 { SourceSub: line.SOURCE_SUBREDDIT, TargetSub: line.TARGET_SUBREDDIT, PostID: line.POST_ID, \
+#   Timestamp: line.TIMESTAMP, Link_Sentiment: line.LINK_SENTIMENT, Pos_Vader: line.POS_SENT_VADER, \
+#   Neg_Vader: line.NEG_SENT_VADER, Comp_Vader: line.COMP_SENT_VADER })
+# '''
 query = '''
 USING PERIODIC COMMIT 
-LOAD CSV WITH HEADERS FROM 'https://filebin.net/24au1ydtmhymcwz4/sub_ex_title.csv?t=5tttaxwm' AS line
+LOAD CSV WITH HEADERS FROM 'file:////title_tab_separated.csv' AS line
 CREATE (:Subreddit1 { SourceSub: line.SOURCE_SUBREDDIT, TargetSub: line.TARGET_SUBREDDIT, PostID: line.POST_ID, \
   Timestamp: line.TIMESTAMP, Link_Sentiment: line.LINK_SENTIMENT, Pos_Vader: line.POS_SENT_VADER, \
   Neg_Vader: line.NEG_SENT_VADER, Comp_Vader: line.COMP_SENT_VADER })
