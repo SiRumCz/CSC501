@@ -1,10 +1,10 @@
 
 ### Basics  
 
-The tab separated columns from soc-redditHyperlinks-body.tsv were put into a .csv file via Excel.  
-The tab separated columns and some of the comma separated ones from soc-redditHyperlinks-title.tsv were as well.  
-The comma separated columns that were added are the positive, negative and composite sentiments according to VADER.  
-This .csv files are in this directory in the Imports folder titled 'body_tab_separated.csv' and 'title_tab_separated.csv'.
+To load the data you must put the soc-redditHyperlinks-title.tsv file in the imports folder.  
+Inside of the Docker preferences in the advanced tab the memory needs to be increased to 4.0 GB.  
+This code is loading the links file into neo4j and creating a LINK between source and target subreddits.   
+Run examine_data.py after load_data.py.   
 
 ### Run neo4j in Docker   
 
@@ -24,25 +24,13 @@ to change password use ':server change-password' at localhost:7474
 ### Expected Output  
 
 computer$ cd python  
-computer$ python load_data_body.py  
-<py2neo.database.Cursor object at 0x1177ea8d0>  
-  
-            Source           Target       ID            Time  
-0  leagueoflegends  teamredditteams  1u4nrps  12/31/13 16:39  
-1       theredlion           soccer   1u4qkd  12/31/13 18:18  
-2     inlandempire           bikela  1u4qlzs    1/1/14 14:54  
-  
-                Source  numCount  
-0       subredditdrama      4665  
-1          circlebroke      2358  
-2      shitliberalssay      1968  
-3         outoftheloop      1958  
-4            copypasta      1824  
-...                ...       ...  
-27859         cockhero         1  
-27860       soundcloud         1  
-27861       daddyofive         1  
-27862      mildlynomil         1  
-27863             None         0  
+computer$ python load_data.py 
+<py2neo.database.Cursor object at 0x109a0d160>
 
-[27864 rows x 2 columns]  
+--- Number of LINKS by Year ---
+   year   count
+0  2013      27
+1  2014  128345
+2  2015  175096
+3  2016  194287
+4  2017   74172
