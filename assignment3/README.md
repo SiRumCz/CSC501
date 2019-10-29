@@ -25,12 +25,12 @@ to change password use ':server change-password' at localhost:7474
 
 computer$ cd python  
 computer$ python load_data.py 
-<py2neo.database.Cursor object at 0x109a0d160>
+<py2neo.database.Cursor object at 0x109a0d160>  
 
---- Number of LINKS by Year ---
-   year   count
-0  2013      27
-1  2014  128345
-2  2015  175096
-3  2016  194287
-4  2017   74172
+--- Number of LINKS by Year ---  
+   year   count  
+0  2013      27  
+1  2014  128345  
+2  2015  175096  
+3  2016  194287  
+4  2017   74172  
