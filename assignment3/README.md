@@ -6,25 +6,24 @@ The tab separated columns and some of the comma separated ones from soc-redditHy
 The comma separated columns that were added are the positive, negative and composite sentiments according to VADER.  
 This .csv files are in this directory in the Imports folder titled 'body_tab_separated.csv' and 'title_tab_separated.csv'.
 
-### Run neo4j in Docker  
+### Run neo4j in Docker   
 
-docker pull neo4j  
+cd assignment3  
 
-docker run \  
-    --publish=7474:7474 --publish=7687:7687 \  
-    --volume=$HOME/neo4j/data:/data \  
-    --volume=$PWD/import:/var/lib/neo4j/import \   
-    neo4j  
+docker-compose build  
+
+docker-compose up neo4j  
   
 ### Navigate to localhost:7474 
 
 use ':server connect' to start connection  
-set password  
+set password - default password is 'neo4j'  
 make sure the password is the same as in load_data.py (password: password)  
 to change password use ':server change-password' at localhost:7474  
   
 ### Expected Output  
 
+computer$ cd python  
 computer$ python load_data_body.py  
 <py2neo.database.Cursor object at 0x1177ea8d0>  
   
