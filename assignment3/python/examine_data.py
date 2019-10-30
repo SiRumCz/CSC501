@@ -14,3 +14,16 @@ numLinksPost = '''
 '''
 ex = graph.run(numLinksPost)
 print(ex.to_data_frame())
+
+''' Multigraphs '''
+# eigenvector centrality algorithm 
+print("--- Eigenvector Centrality ---")
+eigen = '''
+    CALL algo.eigenvector.stream('Subreddit','LINK')
+    YIELD nodeId,score
+    RETURN algo.getNodeById(nodeId).id as subreddit,score
+    ORDER BY score DESC LIMIT 10
+'''
+e2 = graph.run(eigen)
+print(e2.to_data_frame())
+
