@@ -87,4 +87,12 @@ subreddit score
 8 news 180.482415  
 9 gifs 165.655387  
 
+### To view a graph example  
+
+navigate to localhot:7474  
+
+MATCH path=(s:Subreddit)-[l:LINK]->()  
+WHERE s.id = "canada" and l.link_sentiment = -1 and l.date.year = 2015  
+RETURN path LIMIT 10  
+
 
