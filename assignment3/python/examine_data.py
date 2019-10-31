@@ -3,7 +3,7 @@ import sys
 graph = Graph(password="password")
 
 if (len(sys.argv) < 2):
-    print("Missing argument - regular, eigenvector, or pagerank")
+    print("Missing argument - lpa, regular, eigenvector, or pagerank")
 
 elif (sys.argv[1]=="regular"):
     # print number of links by year
@@ -50,4 +50,19 @@ elif (sys.argv[1]=="pagerank"):
     '''
     e3 = graph.run(pageR)
     print(e3.to_data_frame())
+elif (sys.argv[1]=="lpa"):
+    # Label propagation algorithm for community detection
+    print("--- Label Propagation ---")
+    # return top 5 communities
+    lpa = '''
+    CALL algo.labelPropagation.stream(
+        "Subreddit", "LINK",
+        {direction: "OUTGOING", iterations: 10}) 
+    YIELD nodeId, label
+    RETURN label, count(*) as size, collect(algo.asNode(nodeId).id) 
+    as subreddits 
+    ORDER BY size DESC LIMIT 5
+    '''
+    e4 = graph.run(lpa)
+    print(e4.to_data_frame())
 
