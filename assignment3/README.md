@@ -73,7 +73,7 @@ computer$ examine_data.py pagerank
 8  todayilearned  152.445091  
 9      worldnews  150.822555  
 
-computer$ examine_data.py eigenvector  
+computer$ examine_data.py eigen  
 --- Eigenvector Centrality ---  
 subreddit score  
 0 iama 321.911086  
