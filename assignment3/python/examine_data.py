@@ -20,7 +20,7 @@ elif (sys.argv[1]=="regular"):
     print(ex.to_data_frame())
 
     ''' Multigraph '''
-elif (sys.argv[1]=="eigenvector"):
+elif (sys.argv[1]=="eigen"):
     # eigenvector centrality algorithm 
     print("--- Eigenvector Centrality ---")
     eigen = '''
@@ -32,7 +32,7 @@ elif (sys.argv[1]=="eigenvector"):
     e2 = graph.run(eigen)
     print(e2.to_data_frame())
 
-elif (sys.argv[1]=="eigenvector2"):
+elif (sys.argv[1]=="eigen2"):
     # eigenvector centrality top 5 positive and negative 
     print("--- Top 5 Positive and Negative ---")
     eigen = '''
