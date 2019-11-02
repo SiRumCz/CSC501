@@ -87,6 +87,12 @@ subreddit score
 8 news 180.482415  
 9 gifs 165.655387  
 
+computer$ examine_data.py eigenvector2  
+--- Top 5 Positive and Negative ---  
+   sentiment                                         top5  
+0          1       [iama, askreddit, pics, funny, videos]  
+1         -1  [askreddit, pics, worldnews, videos, funny]  
+
 ### To view a graph example  
 
 navigate to localhot:7474  
@@ -95,4 +101,12 @@ MATCH path=(s:Subreddit)-[l:LINK]->()
 WHERE s.id = "canada" and l.link_sentiment = -1 and l.date.year = 2015  
 RETURN path LIMIT 10  
 
+### Shortest path
 
+MATCH path = allShortestPaths(
+     (u:Subreddit {id:"canada"})-[*]-(me:Subreddit {id:"ubc"}))
+RETURN path;
+
+MATCH path = shortestPath(
+     (u:Subreddit {id:"mapporn"})-[*]-(me:Subreddit {id:"alpharetta"}))
+RETURN path;

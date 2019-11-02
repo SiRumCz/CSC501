@@ -3,7 +3,7 @@ import sys
 graph = Graph(password="password")
 
 if (len(sys.argv) < 2):
-    print("Missing argument - lpa, regular, eigenvector, or pagerank")
+    print("Missing argument - lpa, regular, eigenvector, eigenvector2 or pagerank")
 
 elif (sys.argv[1]=="regular"):
     # print number of links by year
@@ -28,6 +28,28 @@ elif (sys.argv[1]=="eigenvector"):
         YIELD nodeId,score
         RETURN algo.getNodeById(nodeId).id as subreddit,score
         ORDER BY score DESC LIMIT 10
+    '''
+    e2 = graph.run(eigen)
+    print(e2.to_data_frame())
+
+elif (sys.argv[1]=="eigenvector2"):
+    # eigenvector centrality top 5 positive and negative 
+    print("--- Top 5 Positive and Negative ---")
+    eigen = '''
+        UNWIND [-1, 1] as sentiment
+        CALL algo.eigenvector.stream(
+        'MATCH (s:Subreddit) return id(s) as id',
+        'MATCH (s:Subreddit)-[r:LINK]->(t:Subreddit)
+        // Use parameter
+        WHERE r.link_sentiment = $sentiment
+        // Deduplicate relationships
+        WITH id(s) as source,id(t) as target,count(*) as count
+        RETURN source,target',
+        {graph:'cypher', params:{sentiment:sentiment}})
+        YIELD nodeId,score
+        WITH sentiment,algo.getNodeById(nodeId).id as id,score
+        ORDER BY score DESC
+        RETURN sentiment,collect(id)[..5] as top5
     '''
     e2 = graph.run(eigen)
     print(e2.to_data_frame())
