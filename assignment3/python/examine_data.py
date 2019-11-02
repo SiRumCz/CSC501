@@ -3,7 +3,7 @@ import sys
 graph = Graph(password="password")
 
 if (len(sys.argv) < 2):
-    print("Missing argument - lpa, regular, eigenvector, eigenvector2 or pagerank")
+    print("Missing argument - lpa, regular, eigen, eigen2, eigen3, singlesub or pagerank")
 
 elif (sys.argv[1]=="regular"):
     # print number of links by year
@@ -18,6 +18,19 @@ elif (sys.argv[1]=="regular"):
     '''
     ex = graph.run(numLinksPost)
     print(ex.to_data_frame())
+
+elif (sys.argv[1]=="singlesub"):
+    # single subreddit through the years
+    print("--- Subreddit Through the Years ---")
+    eigen = '''
+        MATCH (s:Subreddit{id:'funny'})-[e:EIGEN]->(y:Year) 
+        RETURN s.id as subreddit, y.value as year,
+        sum(CASE WHEN e.sentiment = 1 THEN e.score END) as positive_sentiment,
+        sum(CASE WHEN e.sentiment = -1 THEN e.score END) as negative_sentiment
+        ORDER BY year
+    '''
+    e2 = graph.run(eigen)
+    print(e2.to_data_frame())
 
     ''' Multigraph '''
 elif (sys.argv[1]=="eigen"):
@@ -50,6 +63,46 @@ elif (sys.argv[1]=="eigen2"):
         WITH sentiment,algo.getNodeById(nodeId).id as id,score
         ORDER BY score DESC
         RETURN sentiment,collect(id)[..5] as top5
+    '''
+    e2 = graph.run(eigen)
+    print(e2.to_data_frame())
+
+elif (sys.argv[1]=="eigen3"):
+    # eigenvector centrality top 5 positive and negative by year 
+    print("--- Top 5 Positive and Negative By Year ---")
+    store_results = '''
+        // Get year and sentiment
+        UNWIND [-1, 1] as sentiment
+        UNWIND range(2014,2017) as year
+        CALL algo.eigenvector.stream(
+            'MATCH (s:Subreddit) return id(s) as id',
+            'MATCH (s:Subreddit)-[r:LINK]->(t:Subreddit)
+            // Use parameters 
+            WHERE r.link_sentiment = $sentiment AND r.date.year = $year
+            // Deduplicate relationships
+            WITH id(s) as source,id(t) as target,count(*) as count
+            RETURN source,target',
+            {graph:'cypher', params:{sentiment:sentiment,year:year}})
+        YIELD nodeId,score
+        WITH sentiment,year,algo.getNodeById(nodeId) as node,score
+        // Filter out very low eigenvector centrality scores
+        // before storing results
+        WHERE score > 1
+        MERGE (y:Year{value:year})
+        MERGE (node)-[e:EIGEN{sentiment:sentiment}]->(y)
+        ON CREATE SET e.score = score
+    '''
+    graph.run(store_results)
+
+    eigen = '''
+        MATCH (sub:Subreddit)-[e:EIGEN]->(year)
+        WITH year,e.sentiment as sentiment,e.score as score,sub
+        ORDER BY score DESC
+        // One way of limiting by row is by using collect()[..x]
+        RETURN year.value as year,
+            sentiment,
+            collect(sub['id'])[..5] as top_5
+        ORDER BY year,sentiment
     '''
     e2 = graph.run(eigen)
     print(e2.to_data_frame())
