@@ -1,0 +1,21 @@
+svg {
+    border: 0px solid gray;
+}
+
+g.am-axis text {
+    font-size: 14px;
+    color: black;
+}
+
+.domain {
+    fill: none;
+}
+.adjacency-matrix svg {
+    display: inline-block;
+}
+
+.tick > line{
+    stroke: black;
+    stroke-width: 1px;
+    stroke-opacity: 0.25;
+}
