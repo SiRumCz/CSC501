@@ -36,7 +36,7 @@ computer$ python load_data.py
 4  2017   74172  
 
 ### Expected Output - examine_data.py  
-#### Options: regular, pagerank, eigenvector
+#### Options: regular, pagerank, lpa, eigen, eigen2, eigen3
 
 computer$ examine_data.py regular  
 --- Number of LINKS by Year ---  
@@ -59,6 +59,15 @@ computer$ examine_data.py regular
 8  56dhwqs      1  
 9  5bm3zgs      1  
 
+computer$ examine_data.py lpa  
+--- Label Propagation ---  
+   label   size                                         subreddits  
+0      2  38714  [rddtgaming, xboxone, ps4, fitnesscirclejerk, ...  
+1  43708    856  [bar, jokesofthedadvariety, redpower, dumb, gl...  
+2  43709    218  [pocket_universe, shootmyshort, thestoryboard,...  
+3  43746     98  [thuglifeprotips, battlefieldloadouts, myrovia...  
+4  43704     82  [funnyfartstories, ishatmyself, friendzone, br...  
+
 computer$ examine_data.py pagerank  
 --- Weighted PageRank ---  
        subreddit       score  
@@ -73,7 +82,7 @@ computer$ examine_data.py pagerank
 8  todayilearned  152.445091  
 9      worldnews  150.822555  
 
-computer$ examine_data.py eigenvector  
+computer$ examine_data.py eigen  
 --- Eigenvector Centrality ---  
 subreddit score  
 0 iama 321.911086  
@@ -87,6 +96,32 @@ subreddit score
 8 news 180.482415  
 9 gifs 165.655387  
 
+computer$ examine_data.py eigen2  
+--- Top 5 Positive and Negative ---  
+   sentiment                                         top5  
+0          1       [iama, askreddit, pics, funny, videos]  
+1         -1  [askreddit, pics, worldnews, videos, funny]  
+
+computer$ examine_data.py eigen3  
+--- Top 5 Positive and Negative By Year ---   
+   year  sentiment                                              top_5  
+0  2014         -1  [askreddit, adviceanimals, iama, todayilearned...  
+1  2014          1             [iama, askreddit, pics, videos, funny]  
+2  2015         -1         [askreddit, worldnews, videos, news, pics]  
+3  2015          1             [iama, askreddit, videos, pics, funny]  
+4  2016         -1  [askreddit, the_donald, worldnews, politics, n...  
+5  2016          1             [iama, askreddit, videos, pics, funny]  
+6  2017         -1  [askreddit, the_donald, politics, worldnews, n...  
+7  2017          1        [askreddit, iama, the_donald, videos, pics]  
+
+computer$ examine_data.py singlesub  
+--- Subreddit Through the Years ---  
+  subreddit  year  positive_sentiment  negative_sentiment  
+0     funny  2014          112.005270           34.955477  
+1     funny  2015          127.159915           37.869209  
+2     funny  2016          139.167690           33.253562  
+3     funny  2017           83.190014           17.709384  
+
 ### To view a graph example  
 
 navigate to localhot:7474  
@@ -95,4 +130,12 @@ MATCH path=(s:Subreddit)-[l:LINK]->()
 WHERE s.id = "canada" and l.link_sentiment = -1 and l.date.year = 2015  
 RETURN path LIMIT 10  
 
+### Shortest path  
 
+MATCH path = allShortestPaths(  
+     (u:Subreddit {id:"canada"})-[*]-(me:Subreddit {id:"ubc"}))  
+RETURN path;  
+  
+MATCH path = shortestPath(  
+     (u:Subreddit {id:"mapporn"})-[*]-(me:Subreddit {id:"alpharetta"}))  
+RETURN path;  
