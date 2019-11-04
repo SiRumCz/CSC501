@@ -9,12 +9,7 @@ import './NodeLink.component.css'
 export class NodeLink extends Component {
 
 
-    constructor(props){
-        super(props);
 
-
-
-    }
     render_node_link = () => {
         const graph = {
             nodes: les_miserables.nodes,
@@ -30,7 +25,8 @@ export class NodeLink extends Component {
             .force("link", d3.forceLink().id(function(d) { return d.id; }))
             .force("charge", d3.forceManyBody())
             .force("center", d3.forceCenter(width / 2, height / 2))
-
+            .force("x", d3.forceX(width/2).strength(0.05))
+            .force("y", d3.forceY(height/2).strength(0.05));
         ;
 
 
@@ -47,7 +43,7 @@ export class NodeLink extends Component {
                 .data(graph.nodes)
                 .enter().append("g")
 
-            let circles = node.append("circle")
+           node.append("circle")
                 .attr("r", 5)
                 .attr("fill", function(d) { return color(d.group); })
                 .call(d3.drag()
@@ -55,7 +51,7 @@ export class NodeLink extends Component {
                     .on("drag", dragged)
                     .on("end", dragended));
 
-            let lables = node.append("text")
+            node.append("text")
                 .text(function(d) {
                     return d.id;
                 })
@@ -112,6 +108,7 @@ export class NodeLink extends Component {
 
     }
     componentDidMount() {
+
         this.render_node_link();
 
     }

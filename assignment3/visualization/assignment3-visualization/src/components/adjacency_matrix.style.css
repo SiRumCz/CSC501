@@ -1,21 +1,48 @@
+.background {
+    fill: #eee;
+}
+
+line {
+    stroke: #fff;
+}
+
+text.active {
+    fill: red;
+}
+
+/* Copyright 2013 Michael Bostock. All rights reserved. Do not copy. */
+
+
+
+
 svg {
-    border: 0px solid gray;
+    font: 10px sans-serif;
 }
 
-g.am-axis text {
-    font-size: 14px;
-    color: black;
-}
-
-.domain {
+.axis path, .axis line {
     fill: none;
-}
-.adjacency-matrix svg {
-    display: inline-block;
+    stroke: #000;
+    shape-rendering: crispEdges;
 }
 
-.tick > line{
-    stroke: black;
-    stroke-width: 1px;
-    stroke-opacity: 0.25;
+sup, sub {
+    line-height: 0;
+}
+
+q:before {
+    content: "“";
+}
+
+q:after {
+    content: "”";
+}
+
+blockquote q {
+    line-height: 1.5em;
+    display: inline;
+}
+
+blockquote q:before,
+blockquote q:after {
+    content: "";
 }

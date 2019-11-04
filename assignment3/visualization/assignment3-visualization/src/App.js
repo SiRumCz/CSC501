@@ -4,7 +4,7 @@ import './App.css';
 import {Chord} from "./components/chord.diagram.component";
 import {EdgeBundled} from "./components/edge_bundled.diagram.component";
 import {NodeLink} from "./components/NodeLink.component";
-// import {AdjacencyMatrix} from "./components/adjacency_matrix.diagram.component";
+import {AdjacencyMatrix} from "./components/adjacency_matrix.diagram.component";
 
 function App() {
     return (
@@ -16,7 +16,7 @@ function App() {
             <h2 className={'margin-top-100'}>Node-Link diagram</h2>
             <NodeLink/>
             <h2 className={'margin-top-100'}>Adjacency Matrix diagram</h2>
-            {/*<AdjacencyMatrix/>*/}
+            <AdjacencyMatrix/>
             <div className={'margin-bottom-100'}></div>
         </div>
     );
