@@ -139,3 +139,9 @@ RETURN path;
 MATCH path = shortestPath(  
      (u:Subreddit {id:"mapporn"})-[*]-(me:Subreddit {id:"alpharetta"}))  
 RETURN path;  
+
+MATCH (a:Subreddit {id: "the_donald"}), (b:Subreddit {id: "alberta"})
+MATCH p=allShortestPaths((a)-[:LINK*]-(b))
+RETURN p LIMIT 50
+
+![shortest path](https://github.com/SiRumCz/CSC501/blob/more_cypher/assignment3/images/trump_alberta_sp.png?raw=true)
