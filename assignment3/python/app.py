@@ -12,6 +12,8 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
+globals = {} # a global var to hold networkx graph objects
+
 
 def execute_query(query: str) -> list:
     if 'db' not in flask_globals:
@@ -95,7 +97,7 @@ def edge_bundling_top_n():
     ] 
     """
     size = request.args.get('size', default=100, type=int)
-    if 'digraph' not in flask_globals:
+    if 'digraph' not in globals:
         get_nodes_query = '''
             MATCH (n:Subreddit)-[LINK]->(Subreddit)
             RETURN n.id AS id
@@ -107,8 +109,8 @@ def edge_bundling_top_n():
         '''
         links_result = execute_query(get_links_query)
         # nx directional graph
-        flask_globals.digraph = make_directed_graph(nodes=nodes_result, links=links_result)
-    G = flask_globals.digraph
+        globals['digraph'] = make_directed_graph(nodes=nodes_result, links=links_result)
+    G = globals['digraph']
     # downsizing using eigenvector centrality score
     ecs_G = eigenvector_centrality(G=G, size=size)
     # communities detection - label propagation algorithm
@@ -141,7 +143,7 @@ def edge_bundling_top_n_v2():
     ] 
     """
     size = request.args.get('size', default=100, type=int)
-    if 'multidigraph' not in flask_globals:
+    if 'multidigraph' not in globals:
         get_nodes_query = '''
             MATCH (n:Subreddit)-[LINK]->(Subreddit)
             RETURN n.id AS id
@@ -153,8 +155,8 @@ def edge_bundling_top_n_v2():
         '''
         links_result = execute_query(get_links_query)
         # nx multi-directional graph
-        flask_globals.multidigraph = make_multi_directed_graph(nodes=nodes_result, links=links_result)
-    G = flask_globals.multidigraph
+        globals['multidigraph'] = make_multi_directed_graph(nodes=nodes_result, links=links_result)
+    G = globals['multidigraph']
     # downsizing using eigenvector centrality score
     ecs_G = eigenvector_centrality(G=G, size=size)
     # communities detection - label propagation algorithm
@@ -193,7 +195,7 @@ def adjacency_matrix_top_n():
     } 
     """
     size = request.args.get('size', default=100, type=int)
-    if 'multidigraph' not in flask_globals:
+    if 'multidigraph' not in globals:
         get_nodes_query = '''
             MATCH (n:Subreddit)-[LINK]->(Subreddit)
             RETURN n.id AS id
@@ -205,8 +207,8 @@ def adjacency_matrix_top_n():
         '''
         links_result = execute_query(get_links_query)
         # nx multi-directional graph
-        flask_globals.multidigraph = make_multi_directed_graph(nodes=nodes_result, links=links_result)
-    G = flask_globals.multidigraph
+        globals['multidigraph'] = make_multi_directed_graph(nodes=nodes_result, links=links_result)
+    G = globals['multidigraph']
     # downsizing using eigenvector centrality score
     ecs_G = eigenvector_centrality(G=G, size=size)
     # communities detection - label propagation algorithm
