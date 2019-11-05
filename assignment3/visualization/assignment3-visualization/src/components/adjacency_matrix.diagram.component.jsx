@@ -70,12 +70,12 @@ export class AdjacencyMatrix extends Component {
             .attr("width", width)
             .attr("height", height);
 
-        var row = svg.selectAll(".row")
+        let row = svg.selectAll(".row")
             .data(matrix)
             .enter().append("g")
             .attr("class", "row")
             .attr("transform", function(d, i) { return "translate(0," + x(i) + ")"; })
-            .each(row);
+            .each(row_function);
 
         row.append("line")
             .attr("x2", width);
@@ -103,7 +103,7 @@ export class AdjacencyMatrix extends Component {
             .attr("text-anchor", "start")
             .text(function(d, i) { return nodes[i].name; });
 
-        function row(row) {
+        function row_function(row) {
              d3.select(this).selectAll(".cell")
                 .data(row.filter(function(d) { return d.z; }))
                 .enter().append("rect")
@@ -119,8 +119,8 @@ export class AdjacencyMatrix extends Component {
         }
 
         function mouseover(p) {
-            d3.selectAll(".row text").classed("active", function(d, i) { return i == p.y; });
-            d3.selectAll(".column text").classed("active", function(d, i) { return i == p.x; });
+            d3.selectAll(".row text").classed("active", function(d, i) { return i === p.y; });
+            d3.selectAll(".column text").classed("active", function(d, i) { return i === p.x; });
         }
 
         function mouseout() {
@@ -135,7 +135,7 @@ export class AdjacencyMatrix extends Component {
 
     render() {
         return(
-            <svg className={'adjacency-matrix'} ref={(ref) => this.ref = ref} width={1000} height={700}>
+            <svg className={'adjacency-matrix'} ref={(ref) => this.ref = ref} width={1000} height={1000}>
             </svg>
         )
     }
