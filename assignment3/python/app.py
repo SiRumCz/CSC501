@@ -110,7 +110,7 @@ def edge_bundling_top_n():
         links_result = execute_query(get_links_query)
         # nx directional graph
         globals['digraph'] = make_directed_graph(nodes=nodes_result, links=links_result)
-    G = globals['digraph']
+    G = globals['digraph'].copy()
     # downsizing using eigenvector centrality score
     ecs_G = eigenvector_centrality(G=G, size=size)
     # communities detection - label propagation algorithm
@@ -156,7 +156,7 @@ def edge_bundling_top_n_v2():
         links_result = execute_query(get_links_query)
         # nx multi-directional graph
         globals['multidigraph'] = make_multi_directed_graph(nodes=nodes_result, links=links_result)
-    G = globals['multidigraph']
+    G = globals['multidigraph'].copy()
     # downsizing using eigenvector centrality score
     ecs_G = eigenvector_centrality(G=G, size=size)
     # communities detection - label propagation algorithm
@@ -208,7 +208,7 @@ def adjacency_matrix_top_n():
         links_result = execute_query(get_links_query)
         # nx multi-directional graph
         globals['multidigraph'] = make_multi_directed_graph(nodes=nodes_result, links=links_result)
-    G = globals['multidigraph']
+    G = globals['multidigraph'].copy()
     # downsizing using eigenvector centrality score
     ecs_G = eigenvector_centrality(G=G, size=size)
     # communities detection - label propagation algorithm
