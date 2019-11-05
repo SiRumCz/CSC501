@@ -6,6 +6,29 @@ if (len(sys.argv) < 2):
     print("Missing argument - lpa, regular, eigen, eigen2, eigen3, singlesub or pagerank")
 
 elif (sys.argv[1]=="regular"):
+
+    # total number of nodes
+    print("--- Total # of Nodes ---")
+    numNodes = graph.run("MATCH (s:Subreddit) RETURN count(s)")
+    print(numNodes.to_data_frame())
+
+    # average number of interactions
+    print("--- Avg. Interactions ---")
+    numNodes = graph.run("MATCH (c:Subreddit)-[:LINK]->() WITH c, count(*) AS num \
+        RETURN min(num) AS min, max(num) AS max, avg(num) \
+        AS avg_interactions, stdev(num) AS stdev")
+    print(numNodes.to_data_frame())
+
+    # # find pivotal nodes - pivotal if it lies on all shortest paths between two other nodes in the network
+    # print("--- Pivotal Nodes ---")
+    # numNodes = graph.run("MATCH (a:Subreddit), (b:Subreddit) \
+    #     MATCH p=allShortestPaths((a)-[:LINK*]-(b)) WITH collect(p) AS paths, a, b \
+    #     MATCH (c:Subreddit) WHERE all(x IN paths WHERE c IN nodes(x)) AND NOT c IN [a,b] \
+    #     RETURN a.id, b.id, c.id AS PivotalNode SKIP 490 LIMIT 10")
+    # print(numNodes.to_data_frame())
+
+    #MATCH (c:Character)-[:INTERACTS]->() WITH c, count(*) AS num RETURN min(num) AS min, max(num) AS max, avg(num) AS avg_characters, stdev(num) AS stdev
+
     # print number of links by year
     print("--- Number of LINKS by Year ---")
     numLinksYear = graph.run("MATCH ()-[r:LINK]->() RETURN r.date.year as year,count(*) as count ORDER BY year")
