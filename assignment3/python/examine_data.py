@@ -30,7 +30,7 @@ elif (sys.argv[1]=="regular"):
     # degree centrality
     print("--- Degree Centrality Top 30 ---")
     numNodes = graph.run("MATCH (c:Subreddit) \
-        RETURN c.id AS node, size( (c)-[:LINK]-() ) AS degree ORDER BY degree DESC LIMIT 30")
+        RETURN c.id AS node, size( (c)-[:LINK]-() ) AS degree ORDER BY degree DESC LIMIT 9000")
     print(numNodes.to_data_frame())
 
     # print number of links by year
