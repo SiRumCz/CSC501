@@ -1,5 +1,6 @@
 py2neo
 flask
 flask-cors
+networkx
 # pandas
 # time
