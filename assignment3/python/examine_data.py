@@ -27,7 +27,11 @@ elif (sys.argv[1]=="regular"):
     #     RETURN a.id, b.id, c.id AS PivotalNode SKIP 490 LIMIT 10")
     # print(numNodes.to_data_frame())
 
-    #MATCH (c:Character)-[:INTERACTS]->() WITH c, count(*) AS num RETURN min(num) AS min, max(num) AS max, avg(num) AS avg_characters, stdev(num) AS stdev
+    # degree centrality
+    print("--- Degree Centrality Top 30 ---")
+    numNodes = graph.run("MATCH (c:Subreddit) \
+        RETURN c.id AS node, size( (c)-[:LINK]-() ) AS degree ORDER BY degree DESC LIMIT 30")
+    print(numNodes.to_data_frame())
 
     # print number of links by year
     print("--- Number of LINKS by Year ---")
