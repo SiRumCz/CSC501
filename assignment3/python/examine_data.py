@@ -1,4 +1,5 @@
 from py2neo import Graph, Node, Relationship
+import jgraph
 import sys
 graph = Graph(password="password")
 
@@ -30,8 +31,25 @@ elif (sys.argv[1]=="regular"):
     # degree centrality
     print("--- Degree Centrality Top 30 ---")
     numNodes = graph.run("MATCH (c:Subreddit) \
-        RETURN c.id AS node, size( (c)-[:LINK]-() ) AS degree ORDER BY degree DESC LIMIT 9000")
+        RETURN c.id AS node, size( (c)-[:LINK]-() ) AS degree ORDER BY degree DESC LIMIT 30")
     print(numNodes.to_data_frame())
+
+    # weighted degree centrality
+    print("--- Weighted Degree Centrality Top 30 ---")
+    numNodes = graph.run("MATCH (c:Subreddit)-[r:LINK]-() \
+        RETURN c.id AS node, sum(r.weight) \
+        AS weightedDegree ORDER BY weightedDegree LIMIT 30")
+    print(numNodes.to_data_frame())
+
+    # betweeness centrality
+    print("--- Betweeness Centrality Top 30 ---")
+    numNodes = graph.run("CALL algo.betweenness.stream() \
+        YIELD nodeId, centrality MATCH (user:Subreddit) \
+        WHERE id(user) = nodeId \
+        RETURN user.id AS user,centrality \
+        ORDER BY centrality DESC LIMIT 30")
+    print(numNodes.to_data_frame())
+
 
     # print number of links by year
     print("--- Number of LINKS by Year ---")

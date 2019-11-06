@@ -144,4 +144,4 @@ MATCH (a:Subreddit {id: "the_donald"}), (b:Subreddit {id: "alberta"})
 MATCH p=allShortestPaths((a)-[:LINK*]-(b))
 RETURN p LIMIT 50
 
-![shortest path](https://github.com/SiRumCz/CSC501/blob/more_cypher/assignment3/images/trump_alberta_sp.png?raw=true)
+![shortest path](https://github.com/SiRumCz/CSC501/blob/master/assignment3/images/trump_alberta_sp_weights.png?raw=true)
