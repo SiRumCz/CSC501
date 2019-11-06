@@ -8,6 +8,13 @@
 .margin-top-100 {
   margin-top: 100px;
 }
+
+.red {
+  color: red;
+}
+.green {
+  color: #2ca02c;
+}
 .margin-bottom-100 {
   margin-bottom: 100px;
 }

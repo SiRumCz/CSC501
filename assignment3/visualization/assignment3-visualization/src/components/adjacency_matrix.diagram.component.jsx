@@ -2,15 +2,14 @@ import * as d3 from 'd3';
 import React, {Component} from 'react';
 
 
-import {les_miserables} from "./les-miserables.data.matrix";
 
 import './adjacency_matrix.style.css'
 
 export class AdjacencyMatrix extends Component {
 
 
-    render_adjacency_matrix = () => {
-        let miserables = les_miserables;
+    render_adjacency_matrix = (data) => {
+        let miserables = data;
         let margin = {top: 80, right: 0, bottom: 10, left: 80},
             width = 720,
             height = 720;
@@ -24,6 +23,9 @@ export class AdjacencyMatrix extends Component {
                     link.target = miserables.nodes[i].index;
                 }
             }
+        })
+        miserables.nodes.forEach(node => {
+            node.group = Math.floor(Math.abs(Math.log(node.group)));
         })
 
         let x = d3.scaleBand().range([0, width]),
@@ -130,7 +132,12 @@ export class AdjacencyMatrix extends Component {
 
     }
     componentDidMount() {
-        this.render_adjacency_matrix();
+        fetch(`${this.props.ip}/adjacency-matrix`)
+            .then(result => (result.json()))
+            .then(data => {
+                this.render_adjacency_matrix(data);
+            })
+
     }
 
     render() {

@@ -127,7 +127,7 @@ export class EdgeBundled extends Component {
     };
 
     componentDidMount() {
-        fetch(`${this.props.ip}/edge-bundling`)
+        fetch(`${this.props.ip}/edge-bundling?size=${this.props.size}`)
             .then(result => (result.json()))
             .then(data => {
                 this.render_edge_bundled(data);
