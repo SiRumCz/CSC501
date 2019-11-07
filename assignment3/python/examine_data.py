@@ -1,5 +1,4 @@
 from py2neo import Graph, Node, Relationship
-import jgraph
 import sys
 graph = Graph(password="password")
 
