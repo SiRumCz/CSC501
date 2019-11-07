@@ -2,7 +2,6 @@ import React, {Component} from 'react';
 
 import * as d3 from 'd3';
 
-import {les_miserables} from "./les_miserables.data";
 
 import './NodeLink.component.css'
 
@@ -10,11 +9,15 @@ export class NodeLink extends Component {
 
 
 
-    render_node_link = () => {
+    render_node_link = (data) => {
         const graph = {
-            nodes: les_miserables.nodes,
-            links: les_miserables.links
+            nodes: data.nodes,
+            links: data.links
         };
+        console.log(graph);
+        graph.nodes.forEach(node => {
+            node.id = node.name;
+        });
         let svg = d3.select(this.ref),
             width = +svg.attr("width"),
             height = +svg.attr("height");
@@ -22,11 +25,9 @@ export class NodeLink extends Component {
         let color = d3.scaleOrdinal(d3.schemeCategory10);
 
         let simulation = d3.forceSimulation()
-            .force("link", d3.forceLink().id(function(d) { return d.id; }))
-            .force("charge", d3.forceManyBody())
+            .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(link =>  10*link.value))
+            .force("charge", d3.forceManyBody().strength(-1000))
             .force("center", d3.forceCenter(width / 2, height / 2))
-            .force("x", d3.forceX(width/2).strength(0.05))
-            .force("y", d3.forceY(height/2).strength(0.05));
         ;
 
 
@@ -35,7 +36,7 @@ export class NodeLink extends Component {
             .selectAll("line")
             .data(graph.links)
             .enter().append("line")
-            .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
+            .attr("stroke-width", function(d) { return Math.sqrt(d.value)/10; });
 
             let node = svg.append("g")
                 .attr("class", "nodes")
@@ -44,7 +45,7 @@ export class NodeLink extends Component {
                 .enter().append("g")
 
            node.append("circle")
-                .attr("r", 5)
+                .attr("r", 10)
                 .attr("fill", function(d) { return color(d.group); })
                 .call(d3.drag()
                     .on("start", dragstarted)
@@ -68,7 +69,8 @@ export class NodeLink extends Component {
             simulation.force("link")
                 .links(graph.links);
 
-            function ticked() {
+
+        function ticked() {
                 link.attr("x1", function (d) {
                     return d.source.x;
                 })
@@ -108,14 +110,17 @@ export class NodeLink extends Component {
 
     }
     componentDidMount() {
-
-        this.render_node_link();
+        fetch(`${this.props.ip}/adjacency-matrix?size=${this.props.size}`)
+            .then(result => (result.json()))
+            .then(data => {
+                this.render_node_link(data);
+            })
 
     }
     render() {
 
         return (
-            <svg ref={(ref) => this.ref = ref} width={1000} height={700}>
+            <svg ref={(ref) => this.ref = ref} width={700} height={700}>
             </svg>
         );
     }

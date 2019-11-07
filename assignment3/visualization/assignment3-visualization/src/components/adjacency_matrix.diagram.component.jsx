@@ -2,15 +2,14 @@ import * as d3 from 'd3';
 import React, {Component} from 'react';
 
 
-import {les_miserables} from "./les-miserables.data.matrix";
 
 import './adjacency_matrix.style.css'
 
 export class AdjacencyMatrix extends Component {
 
 
-    render_adjacency_matrix = () => {
-        let miserables = les_miserables;
+    render_adjacency_matrix = (data) => {
+        let miserables = data;
         let margin = {top: 80, right: 0, bottom: 10, left: 80},
             width = 720,
             height = 720;
@@ -24,6 +23,9 @@ export class AdjacencyMatrix extends Component {
                     link.target = miserables.nodes[i].index;
                 }
             }
+        })
+        miserables.nodes.forEach(node => {
+            node.group = Math.floor(Math.abs(Math.log(node.group)));
         })
 
         let x = d3.scaleBand().range([0, width]),
@@ -70,12 +72,12 @@ export class AdjacencyMatrix extends Component {
             .attr("width", width)
             .attr("height", height);
 
-        var row = svg.selectAll(".row")
+        let row = svg.selectAll(".row")
             .data(matrix)
             .enter().append("g")
             .attr("class", "row")
             .attr("transform", function(d, i) { return "translate(0," + x(i) + ")"; })
-            .each(row);
+            .each(row_function);
 
         row.append("line")
             .attr("x2", width);
@@ -103,7 +105,7 @@ export class AdjacencyMatrix extends Component {
             .attr("text-anchor", "start")
             .text(function(d, i) { return nodes[i].name; });
 
-        function row(row) {
+        function row_function(row) {
              d3.select(this).selectAll(".cell")
                 .data(row.filter(function(d) { return d.z; }))
                 .enter().append("rect")
@@ -119,8 +121,8 @@ export class AdjacencyMatrix extends Component {
         }
 
         function mouseover(p) {
-            d3.selectAll(".row text").classed("active", function(d, i) { return i == p.y; });
-            d3.selectAll(".column text").classed("active", function(d, i) { return i == p.x; });
+            d3.selectAll(".row text").classed("active", function(d, i) { return i === p.y; });
+            d3.selectAll(".column text").classed("active", function(d, i) { return i === p.x; });
         }
 
         function mouseout() {
@@ -128,15 +130,56 @@ export class AdjacencyMatrix extends Component {
         }
 
 
+        d3.select("#order").on("change", function() {
+            clearTimeout(timeout);
+            order(this.value);
+        });
+
+        function order(value) {
+            x.domain(orders[value]);
+
+            var t = svg.transition().duration(2500);
+
+            t.selectAll(".row")
+                .delay(function(d, i) { return x(i) * 4; })
+                .attr("transform", function(d, i) { return "translate(0," + x(i) + ")"; })
+                .selectAll(".cell")
+                .delay(function(d) { return x(d.x) * 4; })
+                .attr("x", function(d) { return x(d.x); });
+
+            t.selectAll(".column")
+                .delay(function(d, i) { return x(i) * 4; })
+                .attr("transform", function(d, i) { return "translate(" + x(i) + ")rotate(-90)"; });
+        }
+
+        var timeout = setTimeout(function() {
+            order("group");
+            d3.select("#order").property("selectedIndex", 2).node().focus();
+        }, 5000);
+
+
     }
     componentDidMount() {
-        this.render_adjacency_matrix();
+        fetch(`${this.props.ip}/adjacency-matrix`)
+            .then(result => (result.json()))
+            .then(data => {
+                this.render_adjacency_matrix(data);
+            })
+
     }
 
     render() {
         return(
-            <svg className={'adjacency-matrix'} ref={(ref) => this.ref = ref} width={1000} height={700}>
+            <div>
+                <p>Change order by selecting a category: <select id="order">
+                    <option value="name">by Name</option>
+                    <option value="count">by Frequency</option>
+                    <option value="group">by Cluster</option>
+                </select>
+                </p>
+            <svg className={'adjacency-matrix'} ref={(ref) => this.ref = ref} width={1000} height={1000}>
             </svg>
+            </div>
         )
     }
 }
