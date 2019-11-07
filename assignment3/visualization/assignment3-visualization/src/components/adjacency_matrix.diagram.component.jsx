@@ -130,6 +130,34 @@ export class AdjacencyMatrix extends Component {
         }
 
 
+        d3.select("#order").on("change", function() {
+            clearTimeout(timeout);
+            order(this.value);
+        });
+
+        function order(value) {
+            x.domain(orders[value]);
+
+            var t = svg.transition().duration(2500);
+
+            t.selectAll(".row")
+                .delay(function(d, i) { return x(i) * 4; })
+                .attr("transform", function(d, i) { return "translate(0," + x(i) + ")"; })
+                .selectAll(".cell")
+                .delay(function(d) { return x(d.x) * 4; })
+                .attr("x", function(d) { return x(d.x); });
+
+            t.selectAll(".column")
+                .delay(function(d, i) { return x(i) * 4; })
+                .attr("transform", function(d, i) { return "translate(" + x(i) + ")rotate(-90)"; });
+        }
+
+        var timeout = setTimeout(function() {
+            order("group");
+            d3.select("#order").property("selectedIndex", 2).node().focus();
+        }, 5000);
+
+
     }
     componentDidMount() {
         fetch(`${this.props.ip}/adjacency-matrix`)
@@ -142,8 +170,16 @@ export class AdjacencyMatrix extends Component {
 
     render() {
         return(
+            <div>
+                <p>Change order by selecting a category: <select id="order">
+                    <option value="name">by Name</option>
+                    <option value="count">by Frequency</option>
+                    <option value="group">by Cluster</option>
+                </select>
+                </p>
             <svg className={'adjacency-matrix'} ref={(ref) => this.ref = ref} width={1000} height={1000}>
             </svg>
+            </div>
         )
     }
 }

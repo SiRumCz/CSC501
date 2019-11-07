@@ -25,8 +25,8 @@ export class NodeLink extends Component {
         let color = d3.scaleOrdinal(d3.schemeCategory10);
 
         let simulation = d3.forceSimulation()
-            .force("link", d3.forceLink().id(function(d) { return d.id; }))
-            .force("charge", d3.forceManyBody())
+            .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(link =>  10*link.value))
+            .force("charge", d3.forceManyBody().strength(-1000))
             .force("center", d3.forceCenter(width / 2, height / 2))
         ;
 
@@ -45,7 +45,7 @@ export class NodeLink extends Component {
                 .enter().append("g")
 
            node.append("circle")
-                .attr("r", 5)
+                .attr("r", 10)
                 .attr("fill", function(d) { return color(d.group); })
                 .call(d3.drag()
                     .on("start", dragstarted)
@@ -69,13 +69,7 @@ export class NodeLink extends Component {
             simulation.force("link")
                 .links(graph.links);
 
-        let zoom_handler = d3.zoom()
-            .on("zoom", zoom_actions);
 
-        zoom_handler(svg);
-        function zoom_actions(){
-            svg.attr("transform", d3.event.transform)
-        }
         function ticked() {
                 link.attr("x1", function (d) {
                     return d.source.x;
